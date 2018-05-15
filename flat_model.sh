@@ -1,0 +1,1 @@
+coreir -i $1 -p clockifyinterface,wireclocks-coreir,rungenerators,removeconstduplicates,deletedeadinstances,rungenerators,cullgraph,removebulkconnections,removepassthroughs,removeunconnected,fold-constants,flatten,flattentypes,packconnections,cullzexts -o $2 -l rtlil
