@@ -1,0 +1,12 @@
+[GENERAL]
+model_file: ../../cgra_fabric/flat_top4x4_nostall.json[NO-INIT],./configured_state.ets
+
+[DEFAULT]
+bmc_length: 5
+
+[config_constant]
+description: "Check that configuration is the same"
+formula: config-prop.txt
+bmc_length: 5
+prove: True
+verification: safety
