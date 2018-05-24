@@ -10,3 +10,4 @@ formula: config-prop.txt
 bmc_length: 5
 prove: True
 verification: safety
+assumptions: (self.reset_in = 0_1) & (self.config_addr_in = 0_32) & (self.config_data_in = 0_32)
