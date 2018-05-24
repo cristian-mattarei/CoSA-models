@@ -1,0 +1,29 @@
+[GENERAL]
+model_file: flat_model.json,reset-abs.ets
+# Yosys abstracts the clock for these properties
+# for fair comparison, we do as well
+abstract_clock: True
+
+[DEFAULT]
+bmc_length: 20
+
+[counter_works]
+description: "Check that the counter decrements"
+formula: (state_688.reg0.out != 0_2) -> ((next(counter_693.reg0.out) = (counter_693.reg0.out - 1_32)) | (counter_693.reg0.out = 0_32))
+prove: True
+verification: safety
+assumptions: self.sys_clk_activated = 1_1
+smt2_tracing: gc_counter_works.smt2
+
+[rd_stop]
+description: "Check that read is only high when in reading state"
+formula: (state_688.reg0.out != 1_2) -> (self.read = 0_1)
+prove: True
+verification: safety
+smt2_tracing: gc_rd_stop.smt2
+
+# [wr_stop_strong]
+# description: "Check that write signal is never corrupted"
+# formula: (self.op != 1_5) -> (next(self.write) = 0_1)
+# prove: True
+# verification: safety

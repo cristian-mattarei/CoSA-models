@@ -1,0 +1,34 @@
+[GENERAL]
+model_file: flat_model.json,reset.ets
+
+[DEFAULT]
+bmc_length: 20
+
+[always_return_to_ready]
+description: "Check that the global controller returns to the ready state"
+formula: (state_688.reg0.out = 0_2)
+prove: True
+verification: liveness
+assumptions: ((counter_693.reg0.out <= 10_32) & (self.sys_clk_activated = 1_1))
+smt2_tracing: gc_f_ready.smt2
+
+[no_underflow]
+description: "Check that the counter does not underflow"
+formula: (reset_done = 1_1) -> ((counter_693.reg0.out = 0_32) -> !(next(counter_693.reg0.out = (0_32 - 1_32))))
+prove: True
+verification: safety
+smt2_tracing: gc_no_underflow.smt2
+
+[wr_stop_strong]
+description: "Check that write signal is never corrupted"
+formula: (self.op != 1_5) -> (next(self.write) = 0_1)
+prove: True
+verification: safety
+smt2_tracing: gc_wr_stop_strong.smt2
+
+# [counter_works]
+# description: "Check that the counter decrements"
+# formula: (reset_done = 1_1) -> (((state_688.reg0.out != 0_2) & (self.clk_in = 0_1)) -> ((next(counter_693.reg0.out) = prev(counter_693.reg0.out) - 1_32) | (prev(counter_693.reg0.out) = 0_32)))
+# prove: True
+# verification: safety
+# assumptions: self.sys_clk_activated = 1_1
