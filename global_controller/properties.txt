@@ -1,1 +1,9 @@
+# no_underflow
 (reset_done = 1_1) -> ((counter_693.reg0.out = 0_32) -> !(next(counter_693.reg0.out = (0_32 - 1_32))))
+
+# counter_works
+(reset_done = 1_1) -> (((state_688.reg0.out != 0_2) & (self.clk_in = 1_1)) -> (counter_693.reg0.out = prev(counter_693.reg0.out) - 1_32))
+
+# rd_stop
+(reset_done = 1_1) -> ((state_688.reg0.out != 1_2) -> (self.read = 0_1))
+
