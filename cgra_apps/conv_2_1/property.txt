@@ -11,26 +11,5 @@
 # mem_0x5.memory_core._d_auto_d_pmuxtree_cc65recursive_mux_generator_d_3419.mux0.in1
 
 # dependent on assumption that inputs are always equal
-# can't use implication because of delay -- need to always be equal
-# might also differ on clock edge...should check
 # first 10 pixels are invalid
 ((sys2.lb_p4_clamped_stencil_update_stream.mem_1.cnt.reg0.out < 10_5) | (sys1.pe_0x6.sb_wide._d_ternary_d___sb_unq1_v500_d_827.mux0.out = sys2.self.out_0_0))
-
-# debugging again
-# ((sys2.lb_p4_clamped_stencil_update_stream.mem_1.cnt.reg0.out < 10_5) | (sys1.mem_0x5.memory_core._d_procmux_d_2304.mux0.out = sys2.lb_p4_clamped_stencil_update_stream.mem_1.mem.rdata))
-
-# actual equivalence property -- currently fails
-# ((sys1.pe_0x2.sb_wide._d_ternary_d___sb_unq1_v230_d_767.mux0.out = sys2.self.in_arg_1_0_0) -> ((self.clk_in = 1_1) | (sys1.pe_0x6.sb_wide._d_ternary_d___sb_unq1_v500_d_827.mux0.out = sys2.self.out_0_0)))
-
-# Check that routing is correct
-# (((sys1.pe_0x2.sb_wide._d_ternary_d___sb_unq1_v230_d_767.mux0.out = sys2.self.in_arg_1_0_0) & (sys1.mem_0x5.memory_core._d_procmux_d_2304.mux0.out = sys2.lb_p4_clamped_stencil_update_stream.mem_1.mem.rdata)) -> (sys1.pe_0x6.sb_wide._d_ternary_d___sb_unq1_v500_d_827.mux0.out = sys2.self.out_0_0))
-
-# debugging
-# if inputs are equal then memories get the same values
-# (sys1.pe_0x2.sb_wide._d_ternary_d___sb_unq1_v230_d_767.mux0.out = sys2.self.in_arg_1_0_0) -> (sys1.mem_0x5.memory_core._d_auto_d_pmuxtree_cc65recursive_mux_generator_d_3419.mux0.in1 = sys2.lb_p4_clamped_stencil_update_stream.mem_1.mem.wdata)
-
-# This one passes -- says that wdata is getting the write signal from connection box
-# (sys1.mem_0x5.cb_wdata._d_auto_d_pmuxtree_cc65recursive_mux_generator_d_3343.mux0.in1 = sys1.mem_0x5.memory_core._d_auto_d_pmuxtree_cc65recursive_mux_generator_d_3419.mux0.in1)
-
-# This passes
-# (sys1.pe_0x2.sb_wide._d_ternary_d___sb_unq1_v230_d_767.mux0.out = sys1.mem_0x5.memory_core._d_auto_d_pmuxtree_cc65recursive_mux_generator_d_3419.mux0.in1)
