@@ -1,0 +1,11 @@
+[GENERAL]
+model_file: mpe.json
+equivalence: mpe_fc.json[FC-LEMMAS]
+
+[DEFAULT]
+bmc_length: 10
+
+[Equivalence Checking with Lemmas]
+description: "Use the collateral from CoreIR to help the equivalence check go through"
+verification: equivalence
+prove: True

@@ -7,9 +7,7 @@ bmc_length: 40
 [conv_2_1 equivalence]
 description: "Check that placed-and-routed bitstream on CGRA matches CoreIR design for conv_2_1"
 formula: property.txt
-# lemmas: lemmas.txt
 bmc_length: 40
-# prove: True
 verification: equivalence
 assumptions: assumptions.txt
 equivalence: flat_conv_2_1.json
