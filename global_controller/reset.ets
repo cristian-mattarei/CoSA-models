@@ -14,6 +14,6 @@ S3: reset_done = 1_1
 
 # TRANSITIONS
 I -> S1
-S2 -> S2
+S1 -> S2
 S2 -> S3
 S3 -> S3
