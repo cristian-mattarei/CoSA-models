@@ -1,0 +1,54 @@
+{"top":"global.__DOLLAR__paramod__BACKSLASH__oh_bin2gray__BACKSLASH__DW__EQUALS__6",
+"namespaces":{
+  "global":{
+    "modules":{
+      "__DOLLAR__paramod__BACKSLASH__oh_bin2gray__BACKSLASH__DW__EQUALS__6":{
+        "type":["Record",[
+          ["in",["Array",6,"BitIn"]],
+          ["out",["Array",6,"Bit"]]
+        ]],
+        "instances":{
+          "__DOLLAR__xor__DOLLAR__oh_bin2gray__DOT__v__COLON__27__DOLLAR__1974$op0":{
+            "genref":"coreir.xor",
+            "genargs":{"width":["Int",1]}
+          },
+          "__DOLLAR__xor__DOLLAR__oh_bin2gray__DOT__v__COLON__27__DOLLAR__1975$op0":{
+            "genref":"coreir.xor",
+            "genargs":{"width":["Int",1]}
+          },
+          "__DOLLAR__xor__DOLLAR__oh_bin2gray__DOT__v__COLON__27__DOLLAR__1976$op0":{
+            "genref":"coreir.xor",
+            "genargs":{"width":["Int",1]}
+          },
+          "__DOLLAR__xor__DOLLAR__oh_bin2gray__DOT__v__COLON__27__DOLLAR__1977$op0":{
+            "genref":"coreir.xor",
+            "genargs":{"width":["Int",1]}
+          },
+          "__DOLLAR__xor__DOLLAR__oh_bin2gray__DOT__v__COLON__27__DOLLAR__1978$op0":{
+            "genref":"coreir.xor",
+            "genargs":{"width":["Int",1]}
+          }
+        },
+        "connections":[
+          ["self.in.0","__DOLLAR__xor__DOLLAR__oh_bin2gray__DOT__v__COLON__27__DOLLAR__1974$op0.in0.0"],
+          ["self.in.1","__DOLLAR__xor__DOLLAR__oh_bin2gray__DOT__v__COLON__27__DOLLAR__1974$op0.in1.0"],
+          ["self.out.0","__DOLLAR__xor__DOLLAR__oh_bin2gray__DOT__v__COLON__27__DOLLAR__1974$op0.out.0"],
+          ["self.in.1","__DOLLAR__xor__DOLLAR__oh_bin2gray__DOT__v__COLON__27__DOLLAR__1975$op0.in0.0"],
+          ["self.in.2","__DOLLAR__xor__DOLLAR__oh_bin2gray__DOT__v__COLON__27__DOLLAR__1975$op0.in1.0"],
+          ["self.out.1","__DOLLAR__xor__DOLLAR__oh_bin2gray__DOT__v__COLON__27__DOLLAR__1975$op0.out.0"],
+          ["self.in.2","__DOLLAR__xor__DOLLAR__oh_bin2gray__DOT__v__COLON__27__DOLLAR__1976$op0.in0.0"],
+          ["self.in.3","__DOLLAR__xor__DOLLAR__oh_bin2gray__DOT__v__COLON__27__DOLLAR__1976$op0.in1.0"],
+          ["self.out.2","__DOLLAR__xor__DOLLAR__oh_bin2gray__DOT__v__COLON__27__DOLLAR__1976$op0.out.0"],
+          ["self.in.3","__DOLLAR__xor__DOLLAR__oh_bin2gray__DOT__v__COLON__27__DOLLAR__1977$op0.in0.0"],
+          ["self.in.4","__DOLLAR__xor__DOLLAR__oh_bin2gray__DOT__v__COLON__27__DOLLAR__1977$op0.in1.0"],
+          ["self.out.3","__DOLLAR__xor__DOLLAR__oh_bin2gray__DOT__v__COLON__27__DOLLAR__1977$op0.out.0"],
+          ["self.in.4","__DOLLAR__xor__DOLLAR__oh_bin2gray__DOT__v__COLON__27__DOLLAR__1978$op0.in0.0"],
+          ["self.in.5","__DOLLAR__xor__DOLLAR__oh_bin2gray__DOT__v__COLON__27__DOLLAR__1978$op0.in1.0"],
+          ["self.out.4","__DOLLAR__xor__DOLLAR__oh_bin2gray__DOT__v__COLON__27__DOLLAR__1978$op0.out.0"],
+          ["self.out.5","self.in.5"]
+        ]
+      }
+    }
+  }
+}
+}
