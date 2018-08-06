@@ -1,0 +1,26 @@
+[GENERAL]
+model_file: oh_fifo_generic.btor2,rd_clk_beh.ets,wr_clk_beh.ets,reset_beh.ets
+
+[DEFAULT]
+bmc_length: 80
+trace_prefix: trace
+
+# [reset_initialize_memory]
+# description: "After reset, memory should be 0"
+# formula: (reset_done = 1_1) -> ((ram[0] = 0_104) & (ram[1] = 0_104) & (ram[2] = 0_104) & (ram[3] = 0_104) & (ram[4] = 0_104) & (ram[5] = 0_104) & (ram[6] = 0_104) & (ram[7] = 0_104) & (ram[8] = 0_104) & (ram[9] = 0_104) & (ram[10] = 0_104) & (ram[11] = 0_104) & (ram[12] = 0_104) & (ram[13] = 0_104) & (ram[14] = 0_104) & (ram[15] = 0_104) & (ram[16] = 0_104) & (ram[17] = 0_104) & (ram[18] = 0_104) & (ram[19] = 0_104) & (ram[20] = 0_104) & (ram[21] = 0_104) & (ram[22] = 0_104) & (ram[23] = 0_104) & (ram[24] = 0_104) & (ram[25] = 0_104) & (ram[26] = 0_104) & (ram[27] = 0_104) & (ram[28] = 0_104) & (ram[29] = 0_104) & (ram[30] = 0_104) & (ram[31] = 0_104))
+# verification: safety
+# # prove: True
+# trace_diff_vars: True
+
+[reset_initialize_memory]
+description: "After reset, memory should be 0"
+formula: (reset_done = 1_1) -> (ram[0] = 0_104)
+verification: safety
+# prove: True
+trace_diff_vars: True
+
+# [finally_returns_value]
+# description: "Finally returs 44"
+# formula: G((reset_done = 1_1) -> (G((din = 44_104) -> F(dout = 44_104))))
+# # prove: True
+# verification: ltl
