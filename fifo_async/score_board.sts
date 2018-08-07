@@ -1,0 +1,31 @@
+VAR
+reset_done: Bool;
+wr_clk: BV(1);
+rd_clk: BV(1);
+wr_en: BV(1);
+rd_en: BV(1);
+din: BV(104);
+
+sb_position: BV(8);
+sb_tracking: Bool;
+sb_trk_package: BV(104);
+sb_writes: Bool;
+sb_reads: Bool;
+
+INIT
+sb_position = 0_8;
+
+INVAR
+(! reset_done) -> (! sb_tracking);
+
+TRANS
+sb_writes <-> (wr_clk = 0_1) & (next(wr_clk) = 1_1) & (wr_en = 1_1);
+sb_reads <-> (rd_clk = 0_1) & (next(rd_clk) = 1_1) & (rd_en = 1_1);
+(! reset_done) -> ((next(sb_position) = 0_8) & (! sb_tracking));
+sb_tracking & sb_writes -> (next(sb_position) = sb_position + 1_8);
+sb_tracking & sb_reads -> (next(sb_position) = sb_position - 1_8);
+sb_tracking & (!sb_reads & !sb_writes) -> (next(sb_position) = sb_position);
+!sb_tracking -> (next(sb_position) = sb_position);
+sb_tracking -> (next(sb_tracking));
+sb_tracking -> (next(sb_trk_package) = sb_trk_package);
+(!sb_tracking & next(sb_tracking)) -> ((next(sb_trk_package) = next(din)) & next(sb_writes));

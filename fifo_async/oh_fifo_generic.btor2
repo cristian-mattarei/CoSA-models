@@ -450,26 +450,26 @@
                   ; begin $techmap$memory\ram$rdmux[0][2][0]$4073
                       ; begin $techmap$memory\ram$rdmux[0][3][0]$4085
                           ; begin $techmap$memory\ram$rdmux[0][4][0]$4109
-                              ; begin $techmap$memory\ram[0]$3996
-                                188 state 1 ram[0]
-                                ; 188 ram[0]
-                              ; end $techmap$memory\ram[0]$3996
-                              ; begin $techmap$memory\ram[1]$3998
-                                189 state 1 ram[1]
-                                ; 189 ram[1]
-                              ; end $techmap$memory\ram[1]$3998
+                              ; begin $techmap$memory\ram[00]$3996
+                                188 state 1 ram[00]
+                                ; 188 ram[00]
+                              ; end $techmap$memory\ram[00]$3996
+                              ; begin $techmap$memory\ram[01]$3998
+                                189 state 1 ram[01]
+                                ; 189 ram[01]
+                              ; end $techmap$memory\ram[01]$3998
                             190 ite 1 13 189 188
                             ; 190 $techmap$memory\ram$rdmux[0][3][0]$a$4086
                           ; end $techmap$memory\ram$rdmux[0][4][0]$4109
                           ; begin $techmap$memory\ram$rdmux[0][4][1]$4112
-                              ; begin $techmap$memory\ram[2]$4000
-                                191 state 1 ram[2]
-                                ; 191 ram[2]
-                              ; end $techmap$memory\ram[2]$4000
-                              ; begin $techmap$memory\ram[3]$4002
-                                192 state 1 ram[3]
-                                ; 192 ram[3]
-                              ; end $techmap$memory\ram[3]$4002
+                              ; begin $techmap$memory\ram[02]$4000
+                                191 state 1 ram[02]
+                                ; 191 ram[02]
+                              ; end $techmap$memory\ram[02]$4000
+                              ; begin $techmap$memory\ram[03]$4002
+                                192 state 1 ram[03]
+                                ; 192 ram[03]
+                              ; end $techmap$memory\ram[03]$4002
                             193 ite 1 13 192 191
                             ; 193 $techmap$memory\ram$rdmux[0][3][0]$b$4087
                           ; end $techmap$memory\ram$rdmux[0][4][1]$4112
@@ -478,26 +478,26 @@
                       ; end $techmap$memory\ram$rdmux[0][3][0]$4085
                       ; begin $techmap$memory\ram$rdmux[0][3][1]$4088
                           ; begin $techmap$memory\ram$rdmux[0][4][2]$4115
-                              ; begin $techmap$memory\ram[4]$4004
-                                195 state 1 ram[4]
-                                ; 195 ram[4]
-                              ; end $techmap$memory\ram[4]$4004
-                              ; begin $techmap$memory\ram[5]$4006
-                                196 state 1 ram[5]
-                                ; 196 ram[5]
-                              ; end $techmap$memory\ram[5]$4006
+                              ; begin $techmap$memory\ram[04]$4004
+                                195 state 1 ram[04]
+                                ; 195 ram[04]
+                              ; end $techmap$memory\ram[04]$4004
+                              ; begin $techmap$memory\ram[05]$4006
+                                196 state 1 ram[05]
+                                ; 196 ram[05]
+                              ; end $techmap$memory\ram[05]$4006
                             197 ite 1 13 196 195
                             ; 197 $techmap$memory\ram$rdmux[0][3][1]$a$4089
                           ; end $techmap$memory\ram$rdmux[0][4][2]$4115
                           ; begin $techmap$memory\ram$rdmux[0][4][3]$4118
-                              ; begin $techmap$memory\ram[6]$4008
-                                198 state 1 ram[6]
-                                ; 198 ram[6]
-                              ; end $techmap$memory\ram[6]$4008
-                              ; begin $techmap$memory\ram[7]$4010
-                                199 state 1 ram[7]
-                                ; 199 ram[7]
-                              ; end $techmap$memory\ram[7]$4010
+                              ; begin $techmap$memory\ram[06]$4008
+                                198 state 1 ram[06]
+                                ; 198 ram[06]
+                              ; end $techmap$memory\ram[06]$4008
+                              ; begin $techmap$memory\ram[07]$4010
+                                199 state 1 ram[07]
+                                ; 199 ram[07]
+                              ; end $techmap$memory\ram[07]$4010
                             200 ite 1 13 199 198
                             ; 200 $techmap$memory\ram$rdmux[0][3][1]$b$4090
                           ; end $techmap$memory\ram$rdmux[0][4][3]$4118
@@ -510,14 +510,14 @@
                   ; begin $techmap$memory\ram$rdmux[0][2][1]$4076
                       ; begin $techmap$memory\ram$rdmux[0][3][2]$4091
                           ; begin $techmap$memory\ram$rdmux[0][4][4]$4121
-                              ; begin $techmap$memory\ram[8]$4012
-                                203 state 1 ram[8]
-                                ; 203 ram[8]
-                              ; end $techmap$memory\ram[8]$4012
-                              ; begin $techmap$memory\ram[9]$4014
-                                204 state 1 ram[9]
-                                ; 204 ram[9]
-                              ; end $techmap$memory\ram[9]$4014
+                              ; begin $techmap$memory\ram[08]$4012
+                                203 state 1 ram[08]
+                                ; 203 ram[08]
+                              ; end $techmap$memory\ram[08]$4012
+                              ; begin $techmap$memory\ram[09]$4014
+                                204 state 1 ram[09]
+                                ; 204 ram[09]
+                              ; end $techmap$memory\ram[09]$4014
                             205 ite 1 13 204 203
                             ; 205 $techmap$memory\ram$rdmux[0][3][2]$a$4092
                           ; end $techmap$memory\ram$rdmux[0][4][4]$4121
@@ -902,7 +902,7 @@
       ; end $techmap$procdff$3955.$procmux$17599
     338 next 11 178 337
   ; end next $techmap$procdff$3955.$procdff$17601
-  ; begin next $techmap$memory\ram[0]$3996
+  ; begin next $techmap$memory\ram[00]$3996
       ; begin $techmap$memory\ram$wrmux[0][0][0]$4177
         339 slice 3 188 0 0
         340 slice 3 2 0 0
@@ -1767,8 +1767,8 @@
     858 concat 857 657 856
     859 concat 1 660 858
     860 next 1 188 859
-  ; end next $techmap$memory\ram[0]$3996
-  ; begin next $techmap$memory\ram[1]$3998
+  ; end next $techmap$memory\ram[00]$3996
+  ; begin next $techmap$memory\ram[01]$3998
       ; begin $techmap$memory\ram$wrmux[1][0][0]$4599
         861 slice 3 189 0 0
           ; begin $techmap$memory\ram$wren[1][0][0]$4597
@@ -2405,8 +2405,8 @@
     1173 concat 857 1069 1172
     1174 concat 1 1071 1173
     1175 next 1 189 1174
-  ; end next $techmap$memory\ram[1]$3998
-  ; begin next $techmap$memory\ram[2]$4000
+  ; end next $techmap$memory\ram[01]$3998
+  ; begin next $techmap$memory\ram[02]$4000
       ; begin $techmap$memory\ram$wrmux[2][0][0]$5021
         1176 slice 3 191 0 0
           ; begin $techmap$memory\ram$wren[2][0][0]$5019
@@ -3043,8 +3043,8 @@
     1488 concat 857 1384 1487
     1489 concat 1 1386 1488
     1490 next 1 191 1489
-  ; end next $techmap$memory\ram[2]$4000
-  ; begin next $techmap$memory\ram[3]$4002
+  ; end next $techmap$memory\ram[02]$4000
+  ; begin next $techmap$memory\ram[03]$4002
       ; begin $techmap$memory\ram$wrmux[3][0][0]$5441
         1491 slice 3 192 0 0
           ; begin $techmap$memory\ram$wren[3][0][0]$5439
@@ -3681,8 +3681,8 @@
     1803 concat 857 1699 1802
     1804 concat 1 1701 1803
     1805 next 1 192 1804
-  ; end next $techmap$memory\ram[3]$4002
-  ; begin next $techmap$memory\ram[4]$4004
+  ; end next $techmap$memory\ram[03]$4002
+  ; begin next $techmap$memory\ram[04]$4004
       ; begin $techmap$memory\ram$wrmux[4][0][0]$5863
         1806 slice 3 195 0 0
           ; begin $techmap$memory\ram$wren[4][0][0]$5861
@@ -4319,8 +4319,8 @@
     2118 concat 857 2014 2117
     2119 concat 1 2016 2118
     2120 next 1 195 2119
-  ; end next $techmap$memory\ram[4]$4004
-  ; begin next $techmap$memory\ram[5]$4006
+  ; end next $techmap$memory\ram[04]$4004
+  ; begin next $techmap$memory\ram[05]$4006
       ; begin $techmap$memory\ram$wrmux[5][0][0]$6281
         2121 slice 3 196 0 0
           ; begin $techmap$memory\ram$wren[5][0][0]$6279
@@ -4953,8 +4953,8 @@
     2432 concat 857 2328 2431
     2433 concat 1 2330 2432
     2434 next 1 196 2433
-  ; end next $techmap$memory\ram[5]$4006
-  ; begin next $techmap$memory\ram[6]$4008
+  ; end next $techmap$memory\ram[05]$4006
+  ; begin next $techmap$memory\ram[06]$4008
       ; begin $techmap$memory\ram$wrmux[6][0][0]$6699
         2435 slice 3 198 0 0
           ; begin $techmap$memory\ram$wren[6][0][0]$6697
@@ -5587,8 +5587,8 @@
     2746 concat 857 2642 2745
     2747 concat 1 2644 2746
     2748 next 1 198 2747
-  ; end next $techmap$memory\ram[6]$4008
-  ; begin next $techmap$memory\ram[7]$4010
+  ; end next $techmap$memory\ram[06]$4008
+  ; begin next $techmap$memory\ram[07]$4010
       ; begin $techmap$memory\ram$wrmux[7][0][0]$7117
         2749 slice 3 199 0 0
           ; begin $techmap$memory\ram$wren[7][0][0]$7115
@@ -6221,8 +6221,8 @@
     3060 concat 857 2956 3059
     3061 concat 1 2958 3060
     3062 next 1 199 3061
-  ; end next $techmap$memory\ram[7]$4010
-  ; begin next $techmap$memory\ram[8]$4012
+  ; end next $techmap$memory\ram[07]$4010
+  ; begin next $techmap$memory\ram[08]$4012
       ; begin $techmap$memory\ram$wrmux[8][0][0]$7541
         3063 slice 3 203 0 0
           ; begin $techmap$memory\ram$wren[8][0][0]$7539
@@ -6863,8 +6863,8 @@
     3376 concat 857 3272 3375
     3377 concat 1 3274 3376
     3378 next 1 203 3377
-  ; end next $techmap$memory\ram[8]$4012
-  ; begin next $techmap$memory\ram[9]$4014
+  ; end next $techmap$memory\ram[08]$4012
+  ; begin next $techmap$memory\ram[09]$4014
       ; begin $techmap$memory\ram$wrmux[9][0][0]$7959
         3379 slice 3 204 0 0
           ; begin $techmap$memory\ram$wren[9][0][0]$7957
@@ -7497,7 +7497,7 @@
     3690 concat 857 3586 3689
     3691 concat 1 3588 3690
     3692 next 1 204 3691
-  ; end next $techmap$memory\ram[9]$4014
+  ; end next $techmap$memory\ram[09]$4014
   ; begin next $techmap$memory\ram[10]$4016
       ; begin $techmap$memory\ram$wrmux[10][0][0]$8377
         3693 slice 3 206 0 0
