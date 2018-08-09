@@ -1,0 +1,5 @@
+VAR
+rnd_package: BV(104);
+
+TRANS
+rnd_package = next(rnd_package);
