@@ -101,9 +101,9 @@ module oh_fifo_generic #(parameter DW        = 104,      // FIFO width
    
    // synchronize to read clock
    oh_dsync wr_sync[AW:0] (.dout (wr_addr_gray_sync[AW:0]),
-			   .clk  (rd_clk),
-			   .nreset(rd_nreset),
-			   .din  (wr_addr_gray[AW:0]));
+        		   .clk  (rd_clk),
+        		   .nreset(rd_nreset),
+        		   .din  (wr_addr_gray[AW:0]));
    
    //###########################
    //#read side address counter
@@ -126,9 +126,9 @@ module oh_fifo_generic #(parameter DW        = 104,      // FIFO width
    
    //synchronize to wr clock
    oh_dsync  rd_sync[AW:0] (.dout   (rd_addr_gray_sync[AW:0]),
-			    .clk    (wr_clk),
-			    .nreset (wr_nreset),
-			    .din    (rd_addr_gray[AW:0]));
+        		    .clk    (wr_clk),
+        		    .nreset (wr_nreset),
+        		    .din    (rd_addr_gray[AW:0]));
    
    //convert back to binary (for ease of use, rd_count)
    oh_gray2bin #(.DW(AW+1))
@@ -209,3 +209,174 @@ module oh_bin2gray #(parameter DW = 32 // width of data inputs
      end
    
 endmodule // oh_bin2gray
+//#############################################################################
+//# Function: Clock synchronizer                                              #
+//#############################################################################
+//# Author:   Andreas Olofsson                                                #
+//# License:  MIT (see LICENSE file in OH! repository)                        # 
+//#############################################################################
+
+// added by Makai
+
+module oh_dsync  #(parameter PS    = 2,        // number of sync stages
+		   parameter DELAY = 0        // random delay
+		   )
+   (
+    input  clk, // clock
+    input  nreset, // clock
+    input  din, // input data
+    output dout    // synchronized data
+    );
+   
+	   reg [PS:0]   sync_pipe; 
+	   always @ (posedge clk or negedge nreset)		 
+	     if(!nreset)
+	       sync_pipe[PS:0] <= 'b0;
+	     else
+	       sync_pipe[PS:0] <= {sync_pipe[PS-1:0],din};	      	      
+	   // drive randomize delay from testbench
+	   assign dout = (DELAY & sync_pipe[PS]) |  //extra cycle
+			 (~DELAY & sync_pipe[PS-1]); //default
+   
+endmodule // oh_dsync
+
+
+//#############################################################################
+//# Function: Gray to binary encoder                                          #
+//#############################################################################
+//# Author:   Andreas Olofsson                                                #
+//# License:  MIT (see LICENSE file in OH! repository)                        # 
+//#############################################################################
+
+module oh_gray2bin #(parameter DW = 32) // width of data inputs
+   (
+    input [DW-1:0]  in,  //gray encoded input
+    output [DW-1:0] out  //binary encoded output
+    );
+   
+   reg [DW-1:0]     bin;
+   wire [DW-1:0]    gray;
+   
+   integer 	   i,j;
+
+   assign gray[DW-1:0] = in[DW-1:0];
+   assign out[DW-1:0]  = bin[DW-1:0];
+
+   always @*
+     begin
+	bin[DW-1] = gray[DW-1];   
+	for (i=0; i<(DW-1); i=i+1)
+	  begin
+	     bin[i] = 1'b0;	
+	     for (j=i; j<DW; j=j+1)
+	       bin[i] = bin[i] ^ gray [j];
+	  end
+     end
+
+endmodule // oh_gray2bin
+
+
+
+//#############################################################################
+//# Function: Dual Port Memory                                                #
+//#############################################################################
+//# Author:   Andreas Olofsson                                                #
+//# License:  MIT (see LICENSE file in OH! repository)                        # 
+//#############################################################################
+
+module oh_memory_dp # (parameter DW    = 104,      //memory width
+		       parameter DEPTH = 32,       //memory depth
+		       parameter PROJ  = "",       //project name
+		       parameter MCW   = 8,         //repair/config vector width
+		       parameter AW    = $clog2(DEPTH) // address bus width
+		       ) 
+   (// Memory interface (dual port)
+    input           wr_clk, //write clock
+    input           wr_en, //write enable
+    input [DW-1:0]  wr_wem, //per bit write enable
+    input [AW-1:0]  wr_addr,//write address
+    input [DW-1:0]  wr_din, //write data
+    input           rd_clk, //read clock
+    input           rd_en, //read enable
+    input [AW-1:0]  rd_addr,//read address
+    output [DW-1:0] rd_dout);
+ //,//read output data
+    // Power/repair (ASICs)
+    // input 	    shutdown, // shutdown signal from always on domain   
+    // input [MCW-1:0] memconfig, // generic memory config      
+    // input [MCW-1:0] memrepair, // repair vector
+    // // BIST interface (ASICs)
+    // input 	    bist_en, // bist enable
+    // input 	    bist_we, // write enable global signal   
+    // input [DW-1:0]  bist_wem, // write enable vector
+    // input [AW-1:0]  bist_addr, // address
+    // input [DW-1:0]  bist_din  // data input
+    // );
+
+	   oh_memory_ram #(.DW(DW),
+			   .DEPTH(DEPTH))	     
+	   memory_dp (//read port
+		      .rd_dout	(rd_dout[DW-1:0]),
+		      .rd_clk	(rd_clk),
+		      .rd_en	(rd_en),
+		      .rd_addr	(rd_addr[AW-1:0]),
+		      //write port
+		      .wr_en	(wr_en),
+		      .wr_clk	(wr_clk),
+		      .wr_addr	(wr_addr[AW-1:0]),
+		      .wr_wem	(wr_wem[DW-1:0]),
+		      .wr_din	(wr_din[DW-1:0]));
+
+
+      
+endmodule // oh_memory_dp
+
+
+
+//#############################################################################
+//# Function: Generic RAM memory                                              #
+//#############################################################################
+//# Author:   Andreas Olofsson                                                #
+//# License:  MIT  (see LICENSE file in OH! repository)                       # 
+//#############################################################################
+
+module oh_memory_ram  # (parameter DW    = 104,           //memory width
+			 parameter DEPTH = 32,            //memory depth
+			 parameter AW    = $clog2(DEPTH)  // address width  
+			 ) 
+   (// read-port
+    input 		rd_clk,// rd clock
+    input 		rd_en, // memory access
+    input [AW-1:0] 	rd_addr, // address
+    output reg [DW-1:0] rd_dout, // data output   
+    // write-port
+    input 		wr_clk,// wr clock
+    input 		wr_en, // memory access
+    input [AW-1:0] 	wr_addr, // address
+    input [DW-1:0] 	wr_wem, // write enable vector    
+    input [DW-1:0] 	wr_din // data input
+    );
+   
+   reg [DW-1:0]        ram    [DEPTH-1:0];  
+   integer 	       i;
+      
+   //registered read port
+   always @ (posedge rd_clk)
+     if(rd_en)       
+       rd_dout[DW-1:0] <= ram[rd_addr[AW-1:0]];
+   
+   //write port with vector enable
+   always @(posedge wr_clk)    
+     for (i=0;i<DW;i=i+1)
+       if (wr_en & wr_wem[i]) 
+         ram[wr_addr[AW-1:0]][i] <= wr_din[i];
+  
+endmodule // oh_memory_ram
+
+
+
+
+
+  
+     
+
