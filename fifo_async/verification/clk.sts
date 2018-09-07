@@ -1,0 +1,8 @@
+VAR
+clk: BV(1);
+
+INIT
+clk = 0_1;
+
+TRANS
+(clk = 0_1) <-> next(clk = 1_1);

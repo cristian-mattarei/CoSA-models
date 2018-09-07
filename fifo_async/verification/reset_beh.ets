@@ -7,7 +7,6 @@ S1: reset_done = False
 SD: nreset = 0_1
 SD: reset_done = True
 
-
 I -> S1
 S1 -> SD
 

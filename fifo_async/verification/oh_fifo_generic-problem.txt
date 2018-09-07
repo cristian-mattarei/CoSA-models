@@ -1,5 +1,5 @@
 [GENERAL]
-model_file: oh_fifo_generic-single.v[oh_fifo_generic],reset_beh.ets,rd_clk_beh.ets,wr_clk_beh.ets,random_value.sts
+model_file: ../oh_fifo_generic-single.v[oh_fifo_generic],reset_beh.ets,rd_clk_beh.ets,wr_clk_beh.ets,random_value.sts
 #,score_board.sts
 
 [DEFAULT]
@@ -14,11 +14,11 @@ trace_all_vars: True
 # verification: safety
 # prove: True
 
-# [test1]
-# description: "Test"
-# formula: reset_done -> (wr_addr = 0_6)
-# verification: safety
-# prove: True
+[test1]
+description: "Test"
+formula: (reset_done & negedge(nreset)) -> (wr_addr = 0_6)
+verification: safety
+prove: True
 
 [never_full_and_empty]
 description: "After reset, full and empty should never be high at the same time"

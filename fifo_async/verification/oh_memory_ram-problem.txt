@@ -1,0 +1,22 @@
+[GENERAL]
+model_file: ../oh_fifo_generic-single.v[oh_memory_ram],rd_clk_beh.ets,wr_clk_beh.ets
+
+[DEFAULT]
+bmc_length: 80
+trace_prefix: trace_memory
+trace_vars_change: True
+trace_all_vars: True
+
+[Write_at_pos0]
+description: "Write value at position 0"
+formula: ( posedge(wr_clk) & wr_addr = 0_5) -> (next(ram_00) = wr_din)
+assumptions: (wr_wem = ((0_104) - 1_104)) & (wr_en = 1_1)
+verification: safety
+prove: True
+
+[Read_at_pos0]
+description: "Read value at position 0"
+formula: ( posedge(rd_clk) & rd_addr = 0_5) -> (ram_00 = next(rd_dout))
+assumptions: (rd_en = 1_1)
+verification: safety
+prove: True
