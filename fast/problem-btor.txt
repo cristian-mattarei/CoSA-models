@@ -1,0 +1,14 @@
+[GENERAL]
+model_file: Scoreboard.btor
+abstract_clk: True
+symbolic_init: True
+
+[DEFAULT]
+bmc_length: 20
+
+[Data Integrity]
+description: "The FIFO doesn't drop packets and outputs in the correct order."
+formula: (prop_signal = 1_1)
+verification: safety
+smt2_tracing: scoreboard_array.smt2
+# skip_solving: True
