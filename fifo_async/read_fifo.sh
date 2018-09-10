@@ -1,9 +1,9 @@
 #!/bin/bash
 
 TO_COREIR="/home/mattarei/repos-cos/VerilogToCoreIR/to_coreir.so"
-TARGET="oh_fifo_async"
+TARGET="oh_fifo_generic"
 
-BTORPASSES="hierarchy -top ${TARGET}; hierarchy -check; proc; opt; opt_expr -mux_undef; opt; rename -hide;;; opt; memory;; flatten;; splitnets -driver; setundef -zero -undriven; techmap -map +/adff2dff.v; opt;;;"
+BTORPASSES="hierarchy -top ${TARGET}; hierarchy -check; proc; opt; opt_expr -mux_undef; opt; rename -hide;;; opt; memory;; flatten;; splitnets -driver; setundef -zero -undriven; techmap -map +/adff2dff.v; clk2fflogic;; opt;;;"
 COREIRPASSES="hierarchy -top ${TARGET}; hierarchy -check; proc; pmuxtree; opt; rename -hide;;; opt; memory -nomap;; opt;"
 SMT2PASSES="hierarchy; memory -nomap; proc; techmap -map +/adff2dff.v; opt; prep -top $TARGET;"
 
