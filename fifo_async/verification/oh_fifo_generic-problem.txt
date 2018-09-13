@@ -1,5 +1,5 @@
 [GENERAL]
-model_file: ../oh_fifo_generic-single.v[oh_fifo_generic],reset_beh.ets,rd_clk_beh.ets,wr_clk_beh.ets,random_value.sts
+model_file: ../oh_fifo_generic-single.v[oh_fifo_generic],reset_beh.ets,rd_clk_beh.ets,wr_clk_beh.ets
 assume_if_true: True
 
 [DEFAULT]
@@ -17,15 +17,10 @@ expected: True
 
 [never_read_value]
 description: "After reset, memory will never read a value"
-formula: reset_done -> !(posedge(rd_clk) & (rd_en = 1_1) & (dout = rnd_package))
+formula: (reset_done & (rnd_package.value != zero(dout))) -> !(posedge(rd_clk) & (rd_en = 1_1) & (dout = rnd_package.value))
+generators: rnd_package=Random(dout)
 verification: safety
 expected: False
-
-# [test1]
-# description: "Test"
-# formula: (reset_done & negedge(nreset)) -> (wr_addr = 0_6)
-# verification: safety
-# prove: True
 
 [reset_done]
 description: "Never reset done"

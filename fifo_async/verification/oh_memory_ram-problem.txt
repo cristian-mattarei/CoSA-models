@@ -9,7 +9,7 @@ trace_all_vars: True
 
 [write_value]
 description: "Write value at position"
-formula: (posedge(wr_clk) & (wr_wem = maxbvval(wr_wem)) & (wr_en = 1_1)) -> (memacc(next(ram), wr_addr) = wr_din)
+formula: (posedge(wr_clk) & (wr_wem = ones(wr_wem)) & (wr_en = 1_1)) -> (memacc(next(ram), wr_addr) = wr_din)
 verification: safety
 prove: True
 expected: True
