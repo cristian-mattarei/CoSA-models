@@ -1,6 +1,6 @@
 [GENERAL]
 model_file: ../oh_fifo_generic-single.v[oh_fifo_generic],reset_beh.ets,rd_clk_beh.ets,wr_clk_beh.ets,random_value.sts
-#,score_board.sts
+assume_if_true: True
 
 [DEFAULT]
 bmc_length: 80
@@ -8,66 +8,54 @@ trace_prefix: trace
 trace_vars_change: True
 trace_all_vars: True
 
-# [reset_initializes_values]
-# description: "After reset, memory should be empty"
-# formula: reset_done -> (empty = 1_1)
+[reset_initializes_values]
+description: "After reset, memory should be empty"
+formula: reset_done -> (empty = 1_1)
+verification: safety
+prove: True
+expected: True
+
+[never_read_value]
+description: "After reset, memory will never read a value"
+formula: reset_done -> !(posedge(rd_clk) & (rd_en = 1_1) & (dout = rnd_package))
+verification: safety
+expected: False
+
+# [test1]
+# description: "Test"
+# formula: (reset_done & negedge(nreset)) -> (wr_addr = 0_6)
 # verification: safety
 # prove: True
 
-[test1]
-description: "Test"
-formula: (reset_done & negedge(nreset)) -> (wr_addr = 0_6)
+[reset_done]
+description: "Never reset done"
+formula: !reset_done
+verification: safety
+expected: False
+
+[never_full_and_progfull]
+description: "After reset, full and prog_full should never be high at the same time"
+formula: reset_done -> (!((full = 1_1) & (prog_full = 1_1)))
 verification: safety
 prove: True
+expected: True
+
+[never_empty_and_progfull]
+description: "After reset, empty and prog_full should never be high at the same time"
+formula: reset_done -> (!((empty = 1_1) & (prog_full = 1_1)))
+verification: safety
+prove: True
+expected: True
 
 [never_full_and_empty]
 description: "After reset, full and empty should never be high at the same time"
 formula: reset_done -> (!((full = 1_1) & (empty = 1_1)))
 verification: safety
 prove: True
+expected: True
 
-# [writes_44_in_memory]
-# description: "Writes 44 in memory"
-# formula: (reset_done & (wr_clk = 0_1) & next(wr_clk = 1_1) & (din = 44_104) & (wr_en = 1_1) -> (next(ram[00]) = 44_104))
-# prove: True
-# verification: safety
-
-# [reads_44_from_memory]
-# description: "Read 44 from memory"
-# formula: (reset_done & (rd_clk = 0_1) & next(rd_clk = 1_1) & (ram[00] = 44_104) & (rd_en = 1_1) -> (next(dout) = 44_104))
-# prove: True
-# verification: safety
-
-# [writes_value_in_memory]
-# description: "Writes value in memory"
-# formula: (reset_done & (wr_clk = 0_1) & next(wr_clk = 1_1) & (din = rnd_package) & (wr_en = 1_1) -> (next(ram[00]) = rnd_package))
-# prove: True
-# verification: safety
-
-# [reads_value_from_memory]
-# description: "Reads value from memory"
-# formula: (reset_done & (rd_clk = 0_1) & next(rd_clk = 1_1) & (ram[00] = rnd_package) & (rd_en = 1_1) -> (next(dout) = rnd_package))
-# prove: True
-# verification: safety
-
-# [no_operation_keeps_memory]
-# description: "If no reads or writes, memory remains unchanged"
-# formula: (reset_done & !((rd_clk = 0_1) & next(rd_clk = 1_1) & (rd_en = 1_1)) & !((wr_clk = 0_1) & next(wr_clk = 1_1) & (wr_en = 1_1))) -> ((ram[00] = next(ram[00])) & (ram[01] = next(ram[01])) & (ram[02] = next(ram[02])) & (ram[03] = next(ram[03])) & (ram[04] = next(ram[04])) & (ram[05] = next(ram[05])) & (ram[06] = next(ram[06])) & (ram[07] = next(ram[07])) & (ram[08] = next(ram[08])) & (ram[09] = next(ram[09])) & (ram[10] = next(ram[10])) & (ram[11] = next(ram[11])) & (ram[12] = next(ram[12])) & (ram[13] = next(ram[13])) & (ram[14] = next(ram[14])) & (ram[15] = next(ram[15])) & (ram[16] = next(ram[16])) & (ram[17] = next(ram[17])) & (ram[18] = next(ram[18])) & (ram[19] = next(ram[19])) & (ram[20] = next(ram[20])) & (ram[21] = next(ram[21])) & (ram[22] = next(ram[22])) & (ram[23] = next(ram[23])) & (ram[24] = next(ram[24])) & (ram[25] = next(ram[25])) & (ram[26] = next(ram[26])) & (ram[27] = next(ram[27])) & (ram[28] = next(ram[28])) & (ram[29] = next(ram[29])) & (ram[30] = next(ram[30])) & (ram[31] = next(ram[31])))
-# prove: True
-# verification: safety
-# trace_vars_change: False
-
-# [Scoreboard behavior]
-# description: "Scoreboard Behavior"
-# formula: (reset_done) -> (sb_position != 8_8)
-# prove: True
-# verification: safety
-
-
-# [correctness]
-# description: "Correctness with scoreboard"
-# formula: tracking & (position = 0_8) -> (trk_package = dout)
-# prove: True
-# verification: safety
-
-
+[deadlocks]
+description: "No deadlocks"
+verification: simulation
+expected: True
+bmc_length: 40
