@@ -1,11 +1,8 @@
-I: rd_clk = 0_1
+VAR
+rd_clk: BV(1);
 
-Sh1: rd_clk = 1_1
-Sh2: rd_clk = 1_1
-Sh3: rd_clk = 1_1
+INIT
+rd_clk = 0_1;
 
-Sl1: rd_clk = 0_1
-Sl2: rd_clk = 0_1
-Sl3: rd_clk = 0_1
-
-I -> Sh1
+TRANS
+(rd_clk = 0_1) <-> (next(rd_clk) = 1_1);

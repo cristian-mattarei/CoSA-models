@@ -1,0 +1,8 @@
+VAR
+wr_clk: BV(1);
+
+INIT
+wr_clk = 0_1;
+
+TRANS
+(wr_clk = 0_1) <-> (next(wr_clk) = 1_1);
