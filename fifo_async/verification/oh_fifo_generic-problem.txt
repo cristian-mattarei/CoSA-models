@@ -1,13 +1,15 @@
 [GENERAL]
-model_file: ../oh_fifo_generic-single.v[oh_fifo_generic],rd_clk_beh.sts,wr_clk_beh.sts,reset_beh.ets
+model_file: ../oh_fifo_generic-single.v[oh_fifo_generic],reset_beh.ets
 assume_if_true: True
-#abstract_clock: True
+add_clock: True
+abstract_clock: True
 
 [DEFAULT]
 bmc_length: 180
 trace_prefix: trace
 trace_vars_change: True
 trace_all_vars: True
+vcd: True
 
 [deadlocks]
 description: "No deadlocks"
@@ -78,3 +80,12 @@ formula: reset_performed -> (!((empty = 1_1) & (prog_full = 1_1)))
 verification: safety
 prove: True
 expected: True
+
+# [full_implies_progfull]
+# description: "After reset, full implies prog_full"
+# formula: reset_performed -> ((full = 1_1) -> (prog_full = 1_1))
+# verification: safety
+# expected: True
+# strategy: INT
+# incremental: False
+# prove: True
