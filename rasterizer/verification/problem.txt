@@ -1,0 +1,16 @@
+[GENERAL]
+model_file: ../bbox_test.sv[bbox_unq1],reset_beh.ets
+assume_if_true: True
+add_clock: True
+#abstract_clock: True
+vcd: True
+
+[DEFAULT]
+precondition: reset_performed
+
+# [deadlocks]
+# description: "No deadlocks"
+# verification: simulation
+# expected: True
+# bmc_length: 30
+
