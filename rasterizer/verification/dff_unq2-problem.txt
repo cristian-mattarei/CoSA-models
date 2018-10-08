@@ -1,16 +1,14 @@
 [GENERAL]
-model_file: ../bbox_test.sv[bbox_unq1],rst_beh.ets
+model_file: ../bbox_test.sv[dff_unq2],reset_beh.ets
 assume_if_true: True
 add_clock: True
 abstract_clock: True
-vcd: True
 
 [DEFAULT]
 bmc_length: 20
 trace_prefix: trace
 trace_vars_change: True
 trace_all_vars: True
-vcd: True
 
 # [deadlocks]
 # description: "No deadlocks"
@@ -21,5 +19,5 @@ vcd: True
 [reset_init_signals]
 description: "The reset initialize values"
 verification: safety
-assumptions: (halt_RnnnnL = 1_1);
-formula: (reset_done ) -> ('poly_R13S_retime[0][0]' = 0_24);
+assumptions: en = 1_1;
+formula: (reset_done) -> (out = 0_2);
