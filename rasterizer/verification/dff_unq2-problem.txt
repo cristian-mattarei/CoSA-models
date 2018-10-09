@@ -1,8 +1,8 @@
 [GENERAL]
-model_file: ../bbox_test.sv[dff_unq2],reset_beh.ets
+model_file: ../rast.sv[dff_unq2],reset_beh.ets
 assume_if_true: True
 add_clock: True
-abstract_clock: True
+#abstract_clock: True
 
 [DEFAULT]
 bmc_length: 20
@@ -20,4 +20,5 @@ trace_all_vars: True
 description: "The reset initialize values"
 verification: safety
 assumptions: en = 1_1;
-formula: (reset_done) -> (out = 0_2);
+formula: (reset_done & posedge(clk)) -> (out = 0_2);
+prove: True
