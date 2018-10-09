@@ -572,14 +572,21 @@ module bbox_unq1
    //Define a Less Than Property
    //  
    //  a should be less than b
-   property rb_lt( rst, a , b , c );
-      @(posedge clk) rst | ((a<=b) | !c);
-   endproperty
+   // property rb_lt( rst, a , b , c );
+   //    @(posedge clk) rst | ((a<=b) | !c);
+   // endproperty
 
-   //Check that Lower Left of Bounding Box is less than equal Upper Right
-   assert property( rb_lt( rst, box_R13S[0][0] , box_R13S[1][0] , validPoly_R13H ));
-   assert property( rb_lt( rst, box_R13S[0][1] , box_R13S[1][1] , validPoly_R13H ));
-   //Check that Lower Left of Bounding Box is less than equal Upper Right
+   // //Check that Lower Left of Bounding Box is less than equal Upper Right
+   // assert property( rb_lt( rst, box_R13S[0][0] , box_R13S[1][0] , validPoly_R13H ));
+   // assert property( rb_lt( rst, box_R13S[0][1] , box_R13S[1][1] , validPoly_R13H ));
+   // //Check that Lower Left of Bounding Box is less than equal Upper Right
+
+   property test;
+      @(posedge clk) 1;
+      
+   endproperty // test
+
+   assert property(test);
    
    //Error Checking Assertions
 
@@ -3220,19 +3227,148 @@ endmodule
 
 
 
-module DW_pl_reg # (parameter stages   = 3,
-		    parameter in_reg   = 0,  
-		    parameter out_reg  = 0,  
-		    parameter width    = 24,   
-		    parameter rst_mode = 0
-		    ) 
-   (
-    input [width-1:0]  data_in,
-    input              clk,
-    output [width-1:0] data_out,
-    input              rst_n,
-    input              enable);
+module DW_pl_reg (clk, rst_n, enable,
+		  data_in, data_out);
 
+parameter width = 8;	// NATURAL
+parameter in_reg = 0;   // RANGE 0 to 1
+parameter stages = 4;	// NATURAL
+parameter out_reg = 0;  // RANGE 0 to 1
+parameter rst_mode = 0;	// RANGE 0 to 1
+
+localparam en_msb = (stages-1+in_reg+out_reg < 1)? 0 : (stages+in_reg+out_reg-2);
+
+input			clk;		// clock input
+input			rst_n;		// active low reset input
+input  [en_msb : 0]	enable;		// active high enable input bus
+input  [width-1 : 0]	data_in;	// input data bus
+
+output [width-1 : 0]	data_out;	// output data bus
+
+reg    [width-1 : 0]	pipe_regs [0 : en_msb];
+
+generate
+ if (rst_mode == 0) begin : REG1_ASYNC_RST
+  always @ (posedge clk or negedge rst_n) begin : PROC_registers
+    integer i;
+
+    if (rst_n === 1'b0) begin
+      for (i=0 ; i <= en_msb ; i=i+1) begin
+	pipe_regs[i] <= {width{1'b0}};
+      end
+    end else if (rst_n === 1'b1) begin
+      for (i=0 ; i <= en_msb ; i=i+1) begin
+        if (enable[i] === 1'b1)
+	  pipe_regs[i] <= (i == 0)? (data_in | (data_in ^ data_in)) : pipe_regs[i-1];
+	else if (enable[i] !== 1'b0)
+	  pipe_regs[i] <= ((pipe_regs[i] ^ ((i == 0)? (data_in | (data_in ^ data_in)) : pipe_regs[i-1]))
+			      & {width{1'bx}}) ^ pipe_regs[i];
+      end
+    end else begin
+      for (i=0 ; i <= en_msb ; i=i+1) begin
+	pipe_regs[i] <= {width{1'bx}};
+      end
+    end
+  end
+ end else begin : REG1_SYNC_RST
+  always @ (posedge clk) begin : PROC_registers
+    integer i;
+
+    if (rst_n === 1'b0) begin
+      for (i=0 ; i <= en_msb ; i=i+1) begin
+	pipe_regs[i] <= {width{1'b0}};
+      end
+    end else if (rst_n === 1'b1) begin
+      for (i=0 ; i <= en_msb ; i=i+1) begin
+        if (enable[i] === 1'b1)
+	  pipe_regs[i] <= (i == 0)? (data_in | (data_in ^ data_in)) : pipe_regs[i-1];
+	else if (enable[i] !== 1'b0)
+	  pipe_regs[i] <= ((pipe_regs[i] ^ ((i == 0)? (data_in | (data_in ^ data_in)) : pipe_regs[i-1]))
+			      & {width{1'bx}}) ^ pipe_regs[i];
+      end
+    end else begin
+      for (i=0 ; i <= en_msb ; i=i+1) begin
+	pipe_regs[i] <= {width{1'bx}};
+      end
+    end
+  end
+ end
+endgenerate
+
+
+  assign data_out = (in_reg+stages+out_reg == 1)? (data_in | (data_in ^ data_in)) : pipe_regs[en_msb];
+
+
+  //-------------------------------------------------------------------------
+  // Parameter legality check  
+  //-------------------------------------------------------------------------
+  
+ 
+  initial begin : parameter_check
+    integer param_err_flg;
+
+    param_err_flg = 0;
+    
+  
+    if (width < 1) begin
+      param_err_flg = 1;
+      $display(
+	"ERROR: %m :\n  Invalid value (%d) for parameter width (lower bound: 1)",
+	width );
+    end
+  
+    if ( (stages < 1) || (stages > 1024) ) begin
+      param_err_flg = 1;
+      $display(
+	"ERROR: %m :\n  Invalid value (%d) for parameter stages (legal range: 1 to 1024)",
+	stages );
+    end
+  
+    if ( (in_reg < 0) || (in_reg > 1) ) begin
+      param_err_flg = 1;
+      $display(
+	"ERROR: %m :\n  Invalid value (%d) for parameter in_reg (legal range: 0 to 1)",
+	in_reg );
+    end
+  
+    if ( (out_reg < 0) || (out_reg > 1) ) begin
+      param_err_flg = 1;
+      $display(
+	"ERROR: %m :\n  Invalid value (%d) for parameter out_reg (legal range: 0 to 1)",
+	out_reg );
+    end
+  
+    if ( (in_reg!=0) && (out_reg!=0) ) begin
+      param_err_flg = 1;
+      $display(
+	"ERROR: %m : \n  Invalid configuration of DW_pl_reg - 'in_reg' and 'out_reg' parameters can't both be non-zero" );
+    end
+  
+    if ( (rst_mode < 0) || (rst_mode > 1) ) begin
+      param_err_flg = 1;
+      $display(
+	"ERROR: %m :\n  Invalid value (%d) for parameter rst_mode (legal range: 0 to 1)",
+	rst_mode );
+    end
+  
+    if ( param_err_flg == 1) begin
+      $display(
+        "%m :\n  Simulation aborted due to invalid parameter value(s)");
+      $finish;
+    end
+
+  end // parameter_check 
+
+
+
+  
+  always @ (clk) begin : monitor_clk 
+    if ( (clk !== 1'b0) && (clk !== 1'b1) && ($time > 0) )
+      $display( "WARNING: %m :\n  at time = %t, detected unknown value, %b, on clk input.",
+                $time, clk );
+    end // monitor_clk 
+
+// synopsys translate_on
 
 endmodule
 //
