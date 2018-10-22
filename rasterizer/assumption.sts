@@ -1,0 +1,5 @@
+VAR
+subSample_RnnnnU: BV(4);
+
+TRANS
+next(subSample_RnnnnU) = subSample_RnnnnU;

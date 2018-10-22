@@ -1,15 +1,9 @@
 [GENERAL]
-model_file: rast.sv[top],reset.ets
+model_file: rast.sv[top],reset.ets,assumption.sts
 add_clock: True
+abstract_clock: True
 
 [DEFAULT]
-bmc_length: 20
-
-[Test Iterator 1]
-description: "Check one edge of bounding box"
-formula: reset_done = 0_1
-verification: safety
-strategy: MULTI
+bmc_length: 10
+precondition: reset_done
 prove: True
-expected: True
-smt2_tracing: rast.smt2
