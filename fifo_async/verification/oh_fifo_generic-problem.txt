@@ -3,13 +3,15 @@ model_file: ../oh_fifo_generic-single.v[oh_fifo_generic],reset_beh.ets
 assume_if_true: True
 add_clock: True
 abstract_clock: True
+#clock_behaviors: DetClock(rd_clk, 1);DetClock(wr_clk, 1)
 
 [DEFAULT]
-bmc_length: 180
+bmc_length: 80
 trace_prefix: trace
 trace_vars_change: True
 trace_all_vars: True
 vcd: True
+strategy: MULTI
 
 [deadlocks]
 description: "No deadlocks"
@@ -56,10 +58,11 @@ expected: True
 
 [never_read_value]
 description: "After reset, memory will never read a value"
-formula: (reset_done & (rnd_package.value != zero(dout))) -> !(posedge(rd_clk) & (rd_en = 1_1) & (dout = rnd_package.value))
+formula: (reset_performed & (rnd_package.value != zero(dout))) -> !(posedge(rd_clk) & (rd_en = 1_1) & (dout = rnd_package.value))
 generators: rnd_package=Random(dout)
 verification: safety
 expected: False
+prove: True
 
 [never_full_and_empty]
 description: "After reset, full and empty should never be high at the same time"
@@ -81,11 +84,9 @@ verification: safety
 prove: True
 expected: True
 
-# [full_implies_progfull]
-# description: "After reset, full implies prog_full"
-# formula: reset_performed -> ((full = 1_1) -> (prog_full = 1_1))
-# verification: safety
-# expected: True
-# strategy: INT
-# incremental: False
-# prove: True
+[full_implies_progfull]
+description: "After reset, full implies prog_full"
+formula: reset_performed -> ((full = 1_1) -> (prog_full = 1_1))
+verification: safety
+expected: True
+prove: True
