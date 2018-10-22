@@ -5,12 +5,12 @@
 //  THIS VERSION OF GENESIS2 IS NOT TO BE USED FOR ANY COMMERCIAL USE
 //---------------------------------------------------------------------------
 //
-//
+//  
 //	-----------------------------------------------
 //	|            Genesis Release Info             |
 //	|  $Change: 11012 $ --- $Date: 2012/09/13 $   |
 //	-----------------------------------------------
-//
+//	
 //
 //  Source file: /afs/ir.stanford.edu/users/p/r/praina/ee271/project/rtl/bbox.vp
 //  Source template: bbox
@@ -41,57 +41,57 @@
 
 /*
  * Bounding Box Module
- *
- * Inputs:
- *   3 x,y,z vertices corresponding to tri
+ *     
+ * Inputs: 
+ *   3 x,y,z vertices corresponding to tri 
  *   1 valid bit, indicating triangle is valid data
- *
+ * 
  *  Config Inputs:
  *   2 x,y vertices indicating screen dimensions
  *   1 integer representing square root of SS (16MSAA->4)
  *      we will assume config values are held in some
  *      register and are valid given a valid polygon
- *
+ * 
  *  Control Input:
- *   1 halt signal indicating that no work should be done
- *
+ *   1 halt signal indicating that no work should be done 
+ * 
  * Outputs:
  *   2 vertices describing a clamped bounding box
- *   1 Valid signal indicating that bounding
+ *   1 Valid signal indicating that bounding 
  *           box and triangle value is valid
  *   3 x,y vertices corresponding to tri
- *
- * Global Signals:
+ * 
+ * Global Signals: 
  *   clk, rst
- *
+ * 
  * Function:
  *   Determine a bounding box for the polygon
  *   represented by the vertices.
- *
+ * 
  *   Clamp the Bounding Box to the subsample pixel
  *   space
- *
+ *   
  *   Clip the Bounding Box to Screen Space
  *
  *   Halt operating but retain values if next stage is busy
  *
- *
+ * 
  * Long Description:
  *   This bounding box block accepts a polygon described with three
  *   vertices and determines a set of sample points to test against
- *   the micropolygon.  These sample points correspond to the
- *   either the pixels in the final image or the pixel fragments
+ *   the micropolygon.  These sample points correspond to the 
+ *   either the pixels in the final image or the pixel fragments 
  *   that compose the pixel if multisample anti-aliasing (MSAA)
  *   is enabled.
- *
- *   The inputs to the box are clocked with a bank of dflops.
- *
- *   After the data is clocked, a bounding box is determined
- *   for the micropolygon. A bounding box can be determined
- *   through calculating the maxima and minima for x and y to
+ * 
+ *   The inputs to the box are clocked with a bank of dflops.  
+ * 
+ *   After the data is clocked, a bounding box is determined 
+ *   for the micropolygon. A bounding box can be determined 
+ *   through calculating the maxima and minima for x and y to 
  *   generate a lower left vertice and upper right
  *   vertice.  This data is then clocked.
- *
+ * 
  *   The bounding box next needs to be clamped to the fragment grid.
  *   This can be accomplished through rounding the bounding box values
  *   to the fragment grid.  Additionally, any sample points that exist
@@ -103,20 +103,20 @@
  *   This is because one bounding box operation could correspond to
  *   multiple sample test operations later in the pipe.  As these samples
  *   can take a number of cycles to complete, the data held in the bounding
- *   box stage needs to be preserved.  The halt signal is also required for
+ *   box stage needs to be preserved.  The halt signal is also required for 
  *   when the write device is full/busy.
- *
- *   The valid signal is utilized to indicate whether or a polygon
+ * 
+ *   The valid signal is utilized to indicate whether or a polygon 
  *   is actual data.  This can be useful if the device being read from,
  *   has no more micropolygons.
- *
- *
- *
+ * 
+ * 
+ * 
  *   Author: John Brunhaver
  *   Created:      Thu 07/23/09
  *   Last Updated: Fri 09/30/10
  *
- *   Copyright 2009 <jbrunhaver@gmail.com>
+ *   Copyright 2009 <jbrunhaver@gmail.com>   
  */
 
 
@@ -125,7 +125,7 @@
  * -----------
  * Date           Author    Description
  * Sep 19, 2012   jingpu    ported from John's original code to Genesis
- *
+ *                          
  * ***************************************************************************/
 
 /******************************************************************************
@@ -146,32 +146,32 @@
 
 /* A Note on Signal Names:
  *
- * Most signals have a suffix of the form _RxxxxN
+ * Most signals have a suffix of the form _RxxxxN 
  * where R indicates that it is a Raster Block signal
  * xxxx indicates the clock slice that it belongs to
  * N indicates the type of signal that it is.
- *    H indicates logic high,
+ *    H indicates logic high, 
  *    L indicates logic low,
- *    U indicates unsigned fixed point,
+ *    U indicates unsigned fixed point, 
  *    S indicates signed fixed point.
- *
+ * 
  * For all the signed fixed point signals (logic signed [24-1:0]),
  * their highest 14 bits, namely [23:10]
- * represent the integer part of the fixed point number,
+ * represent the integer part of the fixed point number, 
  * while the lowest 10 bits, namely [9:0]
  * represent the fractional part of the fixed point number.
- *
- *
- *
+ * 
+ * 
+ * 
  * For signal subSample_RnnnnU (logic [3:0])
  * 1000 for  1x MSAA eq to 1 sample per pixel
- * 0100 for  4x MSAA eq to 4 samples per pixel,
+ * 0100 for  4x MSAA eq to 4 samples per pixel, 
  *              a sample is half a pixel on a side
  * 0010 for 16x MSAA eq to 16 sample per pixel,
- *              a sample is a quarter pixel on a side.
- * 0001 for 64x MSAA eq to 64 samples per pixel,
+ *              a sample is a quarter pixel on a side.  
+ * 0001 for 64x MSAA eq to 64 samples per pixel, 
  *              a sample is an eighth of a pixel on a side.
- *
+ * 
  */
 
 
@@ -190,18 +190,18 @@ module bbox_unq1
    input logic [3:0] 			subSample_RnnnnU , // SubSample_Interval
 
    //Global Signals
-   input logic 				clk, // Clock
+   input logic 				clk, // Clock 
    input logic 				rst, // Reset
 
    //Outout Signals
    output logic signed [24-1:0] poly_R13S[3-1:0][3-1:0], // 4 Sets X,Y Fixed Point Values
    output logic 			unsigned [24-1:0] color_R13U[3-1:0] , // Color of Poly
    output logic 			isQuad_R13H, // Is Poly Quad?
-   output logic signed [24-1:0] box_R13S[1:0][1:0], // 2 Sets X,Y Fixed Point Values
+   output logic signed [24-1:0] box_R13S[1:0][1:0], // 2 Sets X,Y Fixed Point Values  
    output logic 			validPoly_R13H                  // Valid Data for Operation
    );
-
-
+   
+   
    //Signals In Clocking Order
 
    //R10 Signals
@@ -217,28 +217,28 @@ module bbox_unq1
    logic signed [24-1:0] 	out_box_R10S[1:0][1:0];      // bounds for output
    // Step 3 Result: valid if validPoly_R10H && BBox within screen
    logic 				outvalid_R10H;               // output is valid
-
+   
    //////// DECLARE OTHER SIGNALS YOU NEED
    logic [1:0][5:0]        cmp_R10H ;             // Comparison Results
-   logic [1:0][1:0][3-1:0]   bbox_sel_R10H ;        // Decoded Select for Unclamped Bbox
+   logic [1:0][1:0][3-1:0]   bbox_sel_R10H ;        // Decoded Select for Unclamped Bbox 
    logic [1:0][1:0]        clamp_R10H;                  // signal require clamping
    logic [1:0][1:0]        invalidate_R10H;             // polygon out of bounds
 
    //R10 Signals
-
+   
    // output for retiming registers
    logic signed [24-1:0] 	poly_R13S_retime[3-1:0][3-1:0]; // 4 Sets X,Y Fixed Point Values
    logic 				unsigned [24-1:0] color_R13U_retime[3-1:0];        // Color of Poly
-   logic signed [24-1:0] 	box_R13S_retime[1:0][1:0];             // 2 Sets X,Y Fixed Point Values
+   logic signed [24-1:0] 	box_R13S_retime[1:0][1:0];             // 2 Sets X,Y Fixed Point Values  
    logic 				isQuad_R13H_retime;                   // Is Poly Quad?
    logic 				validPoly_R13H_retime ;                 // Valid Data for Operation
    // output for retiming registers
 
 
-   // ********** Step 1:  Determining a Bounding Box **********
+   // ********** Step 1:  Determining a Bounding Box ********** 
 
    /* OLD QUAD CODE Used to be here */
-
+   
    /* Note to the bold!!! */
    /* You can actually process more than
     * 3 vertices if you really want.
@@ -260,7 +260,7 @@ module bbox_unq1
       cmp_R10H[0][1] =  poly_R10S[0][0] <  poly_R10S[2][0] ;
       cmp_R10H[0][2] =  poly_R10S[1][0] <  poly_R10S[2][0] ;
       cmp_R10H[0][5:3] = 3'b0;
-
+      
       //Compare Y
       cmp_R10H[1][0] =  poly_R10S[0][1] <  poly_R10S[1][1] ;
       cmp_R10H[1][1] =  poly_R10S[0][1] <  poly_R10S[2][1] ;
@@ -268,35 +268,35 @@ module bbox_unq1
       cmp_R10H[1][5:3] = 3'b0;
 
       // X
-      bbox_sel_R10H[0][0][0] =  cmp_R10H[0][0] &  cmp_R10H[0][1] ;
-      bbox_sel_R10H[0][0][1] = !cmp_R10H[0][0] &  cmp_R10H[0][2] ;
-      bbox_sel_R10H[0][0][2] = !cmp_R10H[0][1] & !cmp_R10H[0][2] ;
-      bbox_sel_R10H[1][0][0] = !cmp_R10H[0][0] & !cmp_R10H[0][1] ;
-      bbox_sel_R10H[1][0][1] =  cmp_R10H[0][0] & !cmp_R10H[0][2] ;
-      bbox_sel_R10H[1][0][2] =  cmp_R10H[0][1] &  cmp_R10H[0][2] ;
-
+      bbox_sel_R10H[0][0][0] =  cmp_R10H[0][0] &  cmp_R10H[0][1] ;       
+      bbox_sel_R10H[0][0][1] = !cmp_R10H[0][0] &  cmp_R10H[0][2] ; 
+      bbox_sel_R10H[0][0][2] = !cmp_R10H[0][1] & !cmp_R10H[0][2] ; 
+      bbox_sel_R10H[1][0][0] = !cmp_R10H[0][0] & !cmp_R10H[0][1] ; 
+      bbox_sel_R10H[1][0][1] =  cmp_R10H[0][0] & !cmp_R10H[0][2] ; 
+      bbox_sel_R10H[1][0][2] =  cmp_R10H[0][1] &  cmp_R10H[0][2] ; 
+      
       // Y
-      bbox_sel_R10H[0][1][0] =  cmp_R10H[1][0] &  cmp_R10H[1][1]  ;
-      bbox_sel_R10H[0][1][1] = !cmp_R10H[1][0] &  cmp_R10H[1][2]  ;
-      bbox_sel_R10H[0][1][2] = !cmp_R10H[1][1] & !cmp_R10H[1][2]  ;
-      bbox_sel_R10H[1][1][0] = !cmp_R10H[1][0] & !cmp_R10H[1][1]  ;
-      bbox_sel_R10H[1][1][1] =  cmp_R10H[1][0] & !cmp_R10H[1][2]  ;
-      bbox_sel_R10H[1][1][2] =  cmp_R10H[1][1] &  cmp_R10H[1][2]  ;
+      bbox_sel_R10H[0][1][0] =  cmp_R10H[1][0] &  cmp_R10H[1][1]  ; 
+      bbox_sel_R10H[0][1][1] = !cmp_R10H[1][0] &  cmp_R10H[1][2]  ; 
+      bbox_sel_R10H[0][1][2] = !cmp_R10H[1][1] & !cmp_R10H[1][2]  ; 
+      bbox_sel_R10H[1][1][0] = !cmp_R10H[1][0] & !cmp_R10H[1][1]  ; 
+      bbox_sel_R10H[1][1][1] =  cmp_R10H[1][0] & !cmp_R10H[1][2]  ; 
+      bbox_sel_R10H[1][1][2] =  cmp_R10H[1][1] &  cmp_R10H[1][2]  ; 
 
       //Perform the Selection
-      //  note that unique indicates that
+      //  note that unique indicates that 
       //  one and only one select signal will be valid
-      //  and that only one case event will occur
+      //  and that only one case event will occur   
       //
       //  This will synthesize to a simple mux with decoded select
-
+      
       //Upper Right X Select
       unique case( 1'b1 )
    ( bbox_sel_R10H[1][0][0] ): box_R10S[1][0] = poly_R10S[0][0] ;
    ( bbox_sel_R10H[1][0][1] ): box_R10S[1][0] = poly_R10S[1][0] ;
    ( bbox_sel_R10H[1][0][2] ): box_R10S[1][0] = poly_R10S[2][0] ;
-      endcase //
-
+      endcase // 
+      
       //Lower Left X Select
       unique case( 1'b1 )
    ( bbox_sel_R10H[0][0][0] ): box_R10S[0][0] = poly_R10S[0][0] ;
@@ -309,8 +309,8 @@ module bbox_unq1
    ( bbox_sel_R10H[1][1][0] ): box_R10S[1][1] = poly_R10S[0][1] ;
    ( bbox_sel_R10H[1][1][1] ): box_R10S[1][1] = poly_R10S[1][1] ;
    ( bbox_sel_R10H[1][1][2] ): box_R10S[1][1] = poly_R10S[2][1] ;
-      endcase //
-
+      endcase // 
+      
       //Lower Left Y Select
       unique case( 1'b1 )
    ( bbox_sel_R10H[0][1][0] ): box_R10S[0][1] = poly_R10S[0][1] ;
@@ -318,7 +318,7 @@ module bbox_unq1
    ( bbox_sel_R10H[0][1][2] ): box_R10S[0][1] = poly_R10S[2][1] ;
       endcase //
 
-      //End Selection of Bounding Box
+      //End Selection of Bounding Box    
 
    end
 
@@ -336,7 +336,7 @@ module bbox_unq1
    // 4x MSAA eq to 4 samples per pixel, a sample is
    // half a pixel on a side
    // 16x MSAA eq to 16 sample per pixel, a sample is
-   // a quarter pixel on a side.
+   // a quarter pixel on a side.  
    // 64x MSAA eq to 64 samples per pixel, a sample is
    // an eighth of a pixel on a side.
 
@@ -344,137 +344,137 @@ module bbox_unq1
    //       to a mask would allow you to do this operation
    //       as a bitwise and operation.
 
-
+   
    //Round LowerLeft and UpperRight for X and Y
    always_comb begin
-
-      //Integer Portion of LL and UR Remains the Same
-      rounded_box_R10S[0][0][24-1:10]
+      
+      //Integer Portion of LL and UR Remains the Same 
+      rounded_box_R10S[0][0][24-1:10] 
      = box_R10S[0][0][24-1:10];
 
       //////// PLACE YOUR CODE HERE
       //////// ASSIGN FRACTION PORTION
 
       //Fractional Portion LL less than Subsample set to 0
-      rounded_box_R10S[0][0][10-4:0]
+      rounded_box_R10S[0][0][10-4:0] 
      = 7'b0;
 
       unique case( subSample_RnnnnU )
    (4'b0001): // 64x MSAA
-     rounded_box_R10S[0][0][10-1:10-3]
-          = { box_R10S[0][0][10-1:10-3] };
+     rounded_box_R10S[0][0][10-1:10-3] 
+          = { box_R10S[0][0][10-1:10-3] };  
    (4'b0010): // 16x MSAA
-       rounded_box_R10S[0][0][10-1:10-3]
-     = { box_R10S[0][0][10-1:10-2] , 1'b0 };
+       rounded_box_R10S[0][0][10-1:10-3] 
+     = { box_R10S[0][0][10-1:10-2] , 1'b0 };  
    (4'b0100): // 4x MSAA
-       rounded_box_R10S[0][0][10-1:10-3]
-     = { box_R10S[0][0][10-1] , 2'b0 };
+       rounded_box_R10S[0][0][10-1:10-3] 
+     = { box_R10S[0][0][10-1] , 2'b0 }; 
    (4'b1000): // 1x MSAA
-       rounded_box_R10S[0][0][10-1:10-3]
+       rounded_box_R10S[0][0][10-1:10-3] 
      = { 3'b0 } ;
       endcase // case ( subSample_RnnnnU )
 
-
+      
    end // always_comb
 
    always_comb begin
-
-      //Integer Portion of LL and UR Remains the Same
-      rounded_box_R10S[0][1][24-1:10]
+      
+      //Integer Portion of LL and UR Remains the Same 
+      rounded_box_R10S[0][1][24-1:10] 
      = box_R10S[0][1][24-1:10];
 
       //////// PLACE YOUR CODE HERE
       //////// ASSIGN FRACTION PORTION
 
       //Fractional Portion LL less than Subsample set to 0
-      rounded_box_R10S[0][1][10-4:0]
+      rounded_box_R10S[0][1][10-4:0] 
      = 7'b0;
 
       unique case( subSample_RnnnnU )
    (4'b0001): // 64x MSAA
-     rounded_box_R10S[0][1][10-1:10-3]
-          = { box_R10S[0][1][10-1:10-3] };
+     rounded_box_R10S[0][1][10-1:10-3] 
+          = { box_R10S[0][1][10-1:10-3] };  
    (4'b0010): // 16x MSAA
-       rounded_box_R10S[0][1][10-1:10-3]
-     = { box_R10S[0][1][10-1:10-2] , 1'b0 };
+       rounded_box_R10S[0][1][10-1:10-3] 
+     = { box_R10S[0][1][10-1:10-2] , 1'b0 };  
    (4'b0100): // 4x MSAA
-       rounded_box_R10S[0][1][10-1:10-3]
-     = { box_R10S[0][1][10-1] , 2'b0 };
+       rounded_box_R10S[0][1][10-1:10-3] 
+     = { box_R10S[0][1][10-1] , 2'b0 }; 
    (4'b1000): // 1x MSAA
-       rounded_box_R10S[0][1][10-1:10-3]
+       rounded_box_R10S[0][1][10-1:10-3] 
      = { 3'b0 } ;
       endcase // case ( subSample_RnnnnU )
 
-
+      
    end // always_comb
 
    always_comb begin
-
-      //Integer Portion of LL and UR Remains the Same
-      rounded_box_R10S[1][0][24-1:10]
+      
+      //Integer Portion of LL and UR Remains the Same 
+      rounded_box_R10S[1][0][24-1:10] 
      = box_R10S[1][0][24-1:10];
 
       //////// PLACE YOUR CODE HERE
       //////// ASSIGN FRACTION PORTION
 
       //Fractional Portion LL less than Subsample set to 0
-      rounded_box_R10S[1][0][10-4:0]
+      rounded_box_R10S[1][0][10-4:0] 
      = 7'b0;
 
       unique case( subSample_RnnnnU )
    (4'b0001): // 64x MSAA
-     rounded_box_R10S[1][0][10-1:10-3]
-          = { box_R10S[1][0][10-1:10-3] };
+     rounded_box_R10S[1][0][10-1:10-3] 
+          = { box_R10S[1][0][10-1:10-3] };  
    (4'b0010): // 16x MSAA
-       rounded_box_R10S[1][0][10-1:10-3]
-     = { box_R10S[1][0][10-1:10-2] , 1'b0 };
+       rounded_box_R10S[1][0][10-1:10-3] 
+     = { box_R10S[1][0][10-1:10-2] , 1'b0 };  
    (4'b0100): // 4x MSAA
-       rounded_box_R10S[1][0][10-1:10-3]
-     = { box_R10S[1][0][10-1] , 2'b0 };
+       rounded_box_R10S[1][0][10-1:10-3] 
+     = { box_R10S[1][0][10-1] , 2'b0 }; 
    (4'b1000): // 1x MSAA
-       rounded_box_R10S[1][0][10-1:10-3]
+       rounded_box_R10S[1][0][10-1:10-3] 
      = { 3'b0 } ;
       endcase // case ( subSample_RnnnnU )
 
-
+      
    end // always_comb
 
    always_comb begin
-
-      //Integer Portion of LL and UR Remains the Same
-      rounded_box_R10S[1][1][24-1:10]
+      
+      //Integer Portion of LL and UR Remains the Same 
+      rounded_box_R10S[1][1][24-1:10] 
      = box_R10S[1][1][24-1:10];
 
       //////// PLACE YOUR CODE HERE
       //////// ASSIGN FRACTION PORTION
 
       //Fractional Portion LL less than Subsample set to 0
-      rounded_box_R10S[1][1][10-4:0]
+      rounded_box_R10S[1][1][10-4:0] 
      = 7'b0;
 
       unique case( subSample_RnnnnU )
    (4'b0001): // 64x MSAA
-     rounded_box_R10S[1][1][10-1:10-3]
-          = { box_R10S[1][1][10-1:10-3] };
+     rounded_box_R10S[1][1][10-1:10-3] 
+          = { box_R10S[1][1][10-1:10-3] };  
    (4'b0010): // 16x MSAA
-       rounded_box_R10S[1][1][10-1:10-3]
-     = { box_R10S[1][1][10-1:10-2] , 1'b0 };
+       rounded_box_R10S[1][1][10-1:10-3] 
+     = { box_R10S[1][1][10-1:10-2] , 1'b0 };  
    (4'b0100): // 4x MSAA
-       rounded_box_R10S[1][1][10-1:10-3]
-     = { box_R10S[1][1][10-1] , 2'b0 };
+       rounded_box_R10S[1][1][10-1:10-3] 
+     = { box_R10S[1][1][10-1] , 2'b0 }; 
    (4'b1000): // 1x MSAA
-       rounded_box_R10S[1][1][10-1:10-3]
+       rounded_box_R10S[1][1][10-1:10-3] 
      = { 3'b0 } ;
       endcase // case ( subSample_RnnnnU )
 
-
+      
    end // always_comb
 
 
    // ***************** End of Step 2 *********************
 
 
-   // ********** Step 3:  Clipping or Rejection **********
+   // ********** Step 3:  Clipping or Rejection ********** 
 
    // Clamp if LL is down/left of screen origin
    // Clamp if UR is up/right of Screen
@@ -500,17 +500,17 @@ module bbox_unq1
       invalidate_R10H[0][1] = box_R10S[0][1] > screen_RnnnnS[1] ;
 
       //Invalid if BBox is down/left of Screen
-      invalidate_R10H[1][0] = box_R10S[1][0] < 0 ;
-      invalidate_R10H[1][1] = box_R10S[1][1] < 0 ;
+      invalidate_R10H[1][0] = box_R10S[1][0] < 0 ;     
+      invalidate_R10H[1][1] = box_R10S[1][1] < 0 ; 
 
-      out_box_R10S[0][0] =
+      out_box_R10S[0][0] = 
             clamp_R10H[0][0] ? 0 : rounded_box_R10S[0][0] ;
-      out_box_R10S[0][1] =
+      out_box_R10S[0][1] = 
             clamp_R10H[0][1] ? 0 : rounded_box_R10S[0][1] ;
-      out_box_R10S[1][0] =
+      out_box_R10S[1][0] = 
             clamp_R10H[1][0] ? screen_RnnnnS[0] : rounded_box_R10S[1][0] ;
-      out_box_R10S[1][1] =
-            clamp_R10H[1][1] ? screen_RnnnnS[1] : rounded_box_R10S[1][1];
+      out_box_R10S[1][1] = 
+            clamp_R10H[1][1] ? screen_RnnnnS[1] : rounded_box_R10S[1][1]; 
 
       outvalid_R10H = ~( | invalidate_R10H ) & validPoly_R10H ;
 
@@ -519,49 +519,49 @@ module bbox_unq1
    // ***************** End of Step 3 *********************
 
 
-
+   
    //Flop Clamped Box to R13_retime with retiming registers
    dff3_unq1  d_bbx_r1 (
-			       .in(poly_R10S) ,
+			       .in(poly_R10S) , 
 			       .clk(clk) , .reset(rst), .en(halt_RnnnnL),
 			       .out(poly_R13S_retime));
-
+   
    dff2_unq1  d_bbx_r2(
-			      .in(color_R10U) ,
+			      .in(color_R10U) , 
 			      .clk(clk) , .reset(rst), .en(halt_RnnnnL),
 			      .out(color_R13U_retime));
-
+   
    dff3_unq2  d_bbx_r3 (
-			       .in(out_box_R10S) ,
+			       .in(out_box_R10S) , 
 			       .clk(clk) , .reset(rst), .en(halt_RnnnnL),
 			       .out(box_R13S_retime));
-
+   
    dff_unq2  d_bbx_r4(
-			      .in({isQuad_R10H, outvalid_R10H}) ,
+			      .in({isQuad_R10H, outvalid_R10H}) , 
 			      .clk(clk) , .reset(rst), .en(halt_RnnnnL),
 			      .out({isQuad_R13H_retime, validPoly_R13H_retime}));
    //Flop Clamped Box to R13_retime with retiming registers
-
-
-
+   
+   
+   
    //Flop R13_retime to R13 with fixed registers
    dff3_unq3  d_bbx_f1 (
-			       .in(poly_R13S_retime) ,
+			       .in(poly_R13S_retime) , 
 			       .clk(clk) , .reset(rst), .en(halt_RnnnnL),
 			       .out(poly_R13S));
-
+   
    dff2_unq3  d_bbx_f2(
-			      .in(color_R13U_retime) ,
+			      .in(color_R13U_retime) , 
 			      .clk(clk) , .reset(rst), .en(halt_RnnnnL),
 			      .out(color_R13U));
-
+   
    dff3_unq4  d_bbx_f3 (
-			       .in(box_R13S_retime) ,
+			       .in(box_R13S_retime) , 
 			       .clk(clk) , .reset(rst), .en(halt_RnnnnL),
 			       .out(box_R13S));
-
+   
    dff_unq4  d_bbx_f4(
-			      .in({isQuad_R13H_retime, validPoly_R13H_retime}) ,
+			      .in({isQuad_R13H_retime, validPoly_R13H_retime}) , 
 			      .clk(clk) , .reset(rst), .en(halt_RnnnnL),
 			      .out({isQuad_R13H, validPoly_R13H}));
    //Flop R13_retime to R13 with fixed registers
@@ -570,30 +570,20 @@ module bbox_unq1
    //Error Checking Assertions
 
    //Define a Less Than Property
-   //
+   //  
    //  a should be less than b
-   // property rb_lt( rst, a , b , c );
-   //    @(posedge clk) rst | ((a<=b) | !c);
-   // endproperty
-
-   // //Check that Lower Left of Bounding Box is less than equal Upper Right
-   // assert property( rb_lt( rst, box_R13S[0][0] , box_R13S[1][0] , validPoly_R13H ));
-   // assert property( rb_lt( rst, box_R13S[0][1] , box_R13S[1][1] , validPoly_R13H ));
-   // //Check that Lower Left of Bounding Box is less than equal Upper Right
-
-   property test;
-      @(posedge clk) 1;
-      
-   endproperty // test
+   property rb_lt( rst, a , b , c );
+      @(posedge clk) rst | ((a<=b) | !c);
+   endproperty
 
    //Check that Lower Left of Bounding Box is less than equal Upper Right
    assert property( rb_lt( rst, box_R13S[0][0] , box_R13S[1][0] , validPoly_R13H ));
    assert property( rb_lt( rst, box_R13S[0][1] , box_R13S[1][1] , validPoly_R13H ));
    //Check that Lower Left of Bounding Box is less than equal Upper Right
-
+   
    //Error Checking Assertions
 
-
+   
    endmodule // bbox_unq1
 
 module bbox_drive
@@ -628,7 +618,7 @@ module bbox_drive
 
    logic [3:0] 		 subSample_RnnnnU;
 
-
+   
    assign screen_RnnnnS[0] = {1'b1,19'd0};
 
    assign screen_RnnnnS[1] = {1'b1,19'd0};
@@ -646,7 +636,7 @@ module bbox_drive
 	   2'b11 : subSample_RnnnnU = 4'b1000;
 
    endcase // unique case (subSample)
-
+         
    // Generate validPoly_R10H if all coordinates are in screen limits
       cmp_validR10H [2][0][0] = (poly_R10S[2][0] >= 0);
 
@@ -686,29 +676,29 @@ module bbox_drive
 
 
    end // always_comb
-
+   
       bbox_unq1  bbox (
 		            .poly_R10S(poly_R10S) ,
-		       .color_R10U(color_R10U) ,
+		       .color_R10U(color_R10U) ,      
 		            .isQuad_R10H(isQuad_R10H) ,
 		            .validPoly_R10H(validPoly_R10H) ,
-
-		            .halt_RnnnnL(halt_RnnnnL) ,
+      
+		            .halt_RnnnnL(halt_RnnnnL) , 
 		            .screen_RnnnnS(screen_RnnnnS) ,
 		            .subSample_RnnnnU(subSample_RnnnnU) ,
-
+      
 		            .clk(clk),
 		            .rst(rst),
-
+      
 		            .poly_R13S(poly_R13S),
-		       .color_R13U(color_R13U) ,
+		       .color_R13U(color_R13U) ,      
 		            .isQuad_R13H(isQuad_R13H),
 		            .box_R13S(box_R13S),
-		            .validPoly_R13H(validPoly_R13H)
+		            .validPoly_R13H(validPoly_R13H) 
 		       ) ;
-
+ 
 endmodule
-// // // // //
+// // // // // 		 
 
 
 
@@ -724,12 +714,12 @@ endmodule
 //  THIS VERSION OF GENESIS2 IS NOT TO BE USED FOR ANY COMMERCIAL USE
 //---------------------------------------------------------------------------
 //
-//
+//  
 //	-----------------------------------------------
 //	|            Genesis Release Info             |
 //	|  $Change: 11012 $ --- $Date: 2012/09/13 $   |
 //	-----------------------------------------------
-//
+//	
 //
 //  Source file: /afs/ir.stanford.edu/users/p/r/praina/ee271/project/rtl/dff2.vp
 //  Source template: dff2
@@ -765,7 +755,7 @@ endmodule
  * -----------
  * Date           Author    Description
  * Sep 20, 2012   jingpu    init version
- *
+ *                          
  * ***************************************************************************/
 
 /******************************************************************************
@@ -781,25 +771,25 @@ endmodule
 //
 
 module dff2_unq1 (
-		input logic [23:0]  in[2:0],
-		input logic 		       clk, reset, en,
+		input logic [23:0]  in[2:0], 
+		input logic 		       clk, reset, en, 
 		output logic [23:0] out[2:0]
-		);
-
-   dff_unq1  dff_0
-     (.in(in[0]) ,
+		);	
+   
+   dff_unq1  dff_0 
+     (.in(in[0]) , 
       .clk(clk) , .reset(reset), .en(en),
       .out(out[0]));
-   dff_unq1  dff_1
-     (.in(in[1]) ,
+   dff_unq1  dff_1 
+     (.in(in[1]) , 
       .clk(clk) , .reset(reset), .en(en),
       .out(out[1]));
-   dff_unq1  dff_2
-     (.in(in[2]) ,
+   dff_unq1  dff_2 
+     (.in(in[2]) , 
       .clk(clk) , .reset(reset), .en(en),
       .out(out[2]));
-
-endmodule
+   
+endmodule 
 //
 //---------------------------------------------------------------------------
 //  THIS FILE WAS AUTOMATICALLY GENERATED BY THE STANFORD GENESIS2 ENGINE
@@ -807,12 +797,12 @@ endmodule
 //  THIS VERSION OF GENESIS2 IS NOT TO BE USED FOR ANY COMMERCIAL USE
 //---------------------------------------------------------------------------
 //
-//
+//  
 //	-----------------------------------------------
 //	|            Genesis Release Info             |
 //	|  $Change: 11012 $ --- $Date: 2012/09/13 $   |
 //	-----------------------------------------------
-//
+//	
 //
 //  Source file: /afs/ir.stanford.edu/users/p/r/praina/ee271/project/rtl/dff2.vp
 //  Source template: dff2
@@ -848,7 +838,7 @@ endmodule
  * -----------
  * Date           Author    Description
  * Sep 20, 2012   jingpu    init version
- *
+ *                          
  * ***************************************************************************/
 
 /******************************************************************************
@@ -864,21 +854,21 @@ endmodule
 //
 
 module dff2_unq2 (
-		input logic [23:0]  in[1:0],
-		input logic 		       clk, reset, en,
+		input logic [23:0]  in[1:0], 
+		input logic 		       clk, reset, en, 
 		output logic [23:0] out[1:0]
-		);
-
-   dff_unq1  dff_0
-     (.in(in[0]) ,
+		);	
+   
+   dff_unq1  dff_0 
+     (.in(in[0]) , 
       .clk(clk) , .reset(reset), .en(en),
       .out(out[0]));
-   dff_unq1  dff_1
-     (.in(in[1]) ,
+   dff_unq1  dff_1 
+     (.in(in[1]) , 
       .clk(clk) , .reset(reset), .en(en),
       .out(out[1]));
-
-endmodule
+   
+endmodule 
 //
 //---------------------------------------------------------------------------
 //  THIS FILE WAS AUTOMATICALLY GENERATED BY THE STANFORD GENESIS2 ENGINE
@@ -886,12 +876,12 @@ endmodule
 //  THIS VERSION OF GENESIS2 IS NOT TO BE USED FOR ANY COMMERCIAL USE
 //---------------------------------------------------------------------------
 //
-//
+//  
 //	-----------------------------------------------
 //	|            Genesis Release Info             |
 //	|  $Change: 11012 $ --- $Date: 2012/09/13 $   |
 //	-----------------------------------------------
-//
+//	
 //
 //  Source file: /afs/ir.stanford.edu/users/p/r/praina/ee271/project/rtl/dff2.vp
 //  Source template: dff2
@@ -927,7 +917,7 @@ endmodule
  * -----------
  * Date           Author    Description
  * Sep 20, 2012   jingpu    init version
- *
+ *                          
  * ***************************************************************************/
 
 /******************************************************************************
@@ -943,25 +933,25 @@ endmodule
 //
 
 module dff2_unq3 (
-		input logic [23:0]  in[2:0],
-		input logic 		       clk, reset, en,
+		input logic [23:0]  in[2:0], 
+		input logic 		       clk, reset, en, 
 		output logic [23:0] out[2:0]
-		);
-
-   dff_unq3  dff_0
-     (.in(in[0]) ,
+		);	
+   
+   dff_unq3  dff_0 
+     (.in(in[0]) , 
       .clk(clk) , .reset(reset), .en(en),
       .out(out[0]));
-   dff_unq3  dff_1
-     (.in(in[1]) ,
+   dff_unq3  dff_1 
+     (.in(in[1]) , 
       .clk(clk) , .reset(reset), .en(en),
       .out(out[1]));
-   dff_unq3  dff_2
-     (.in(in[2]) ,
+   dff_unq3  dff_2 
+     (.in(in[2]) , 
       .clk(clk) , .reset(reset), .en(en),
       .out(out[2]));
-
-endmodule
+   
+endmodule 
 //
 //---------------------------------------------------------------------------
 //  THIS FILE WAS AUTOMATICALLY GENERATED BY THE STANFORD GENESIS2 ENGINE
@@ -969,12 +959,12 @@ endmodule
 //  THIS VERSION OF GENESIS2 IS NOT TO BE USED FOR ANY COMMERCIAL USE
 //---------------------------------------------------------------------------
 //
-//
+//  
 //	-----------------------------------------------
 //	|            Genesis Release Info             |
 //	|  $Change: 11012 $ --- $Date: 2012/09/13 $   |
 //	-----------------------------------------------
-//
+//	
 //
 //  Source file: /afs/ir.stanford.edu/users/p/r/praina/ee271/project/rtl/dff2.vp
 //  Source template: dff2
@@ -1010,7 +1000,7 @@ endmodule
  * -----------
  * Date           Author    Description
  * Sep 20, 2012   jingpu    init version
- *
+ *                          
  * ***************************************************************************/
 
 /******************************************************************************
@@ -1026,21 +1016,21 @@ endmodule
 //
 
 module dff2_unq4 (
-		input logic [23:0]  in[1:0],
-		input logic 		       clk, reset, en,
+		input logic [23:0]  in[1:0], 
+		input logic 		       clk, reset, en, 
 		output logic [23:0] out[1:0]
-		);
-
-   dff_unq3  dff_0
-     (.in(in[0]) ,
+		);	
+   
+   dff_unq3  dff_0 
+     (.in(in[0]) , 
       .clk(clk) , .reset(reset), .en(en),
       .out(out[0]));
-   dff_unq3  dff_1
-     (.in(in[1]) ,
+   dff_unq3  dff_1 
+     (.in(in[1]) , 
       .clk(clk) , .reset(reset), .en(en),
       .out(out[1]));
-
-endmodule
+   
+endmodule 
 //
 //---------------------------------------------------------------------------
 //  THIS FILE WAS AUTOMATICALLY GENERATED BY THE STANFORD GENESIS2 ENGINE
@@ -1048,12 +1038,12 @@ endmodule
 //  THIS VERSION OF GENESIS2 IS NOT TO BE USED FOR ANY COMMERCIAL USE
 //---------------------------------------------------------------------------
 //
-//
+//  
 //	-----------------------------------------------
 //	|            Genesis Release Info             |
 //	|  $Change: 11012 $ --- $Date: 2012/09/13 $   |
 //	-----------------------------------------------
-//
+//	
 //
 //  Source file: /afs/ir.stanford.edu/users/p/r/praina/ee271/project/rtl/dff2.vp
 //  Source template: dff2
@@ -1089,7 +1079,7 @@ endmodule
  * -----------
  * Date           Author    Description
  * Sep 20, 2012   jingpu    init version
- *
+ *                          
  * ***************************************************************************/
 
 /******************************************************************************
@@ -1105,25 +1095,25 @@ endmodule
 //
 
 module dff2_unq5 (
-		input logic [23:0]  in[2:0],
-		input logic 		       clk, reset, en,
+		input logic [23:0]  in[2:0], 
+		input logic 		       clk, reset, en, 
 		output logic [23:0] out[2:0]
-		);
-
-   dff_unq7  dff_0
-     (.in(in[0]) ,
+		);	
+   
+   dff_unq7  dff_0 
+     (.in(in[0]) , 
       .clk(clk) , .reset(reset), .en(en),
       .out(out[0]));
-   dff_unq7  dff_1
-     (.in(in[1]) ,
+   dff_unq7  dff_1 
+     (.in(in[1]) , 
       .clk(clk) , .reset(reset), .en(en),
       .out(out[1]));
-   dff_unq7  dff_2
-     (.in(in[2]) ,
+   dff_unq7  dff_2 
+     (.in(in[2]) , 
       .clk(clk) , .reset(reset), .en(en),
       .out(out[2]));
-
-endmodule
+   
+endmodule 
 //
 //---------------------------------------------------------------------------
 //  THIS FILE WAS AUTOMATICALLY GENERATED BY THE STANFORD GENESIS2 ENGINE
@@ -1131,12 +1121,12 @@ endmodule
 //  THIS VERSION OF GENESIS2 IS NOT TO BE USED FOR ANY COMMERCIAL USE
 //---------------------------------------------------------------------------
 //
-//
+//  
 //	-----------------------------------------------
 //	|            Genesis Release Info             |
 //	|  $Change: 11012 $ --- $Date: 2012/09/13 $   |
 //	-----------------------------------------------
-//
+//	
 //
 //  Source file: /afs/ir.stanford.edu/users/p/r/praina/ee271/project/rtl/dff2.vp
 //  Source template: dff2
@@ -1172,7 +1162,7 @@ endmodule
  * -----------
  * Date           Author    Description
  * Sep 20, 2012   jingpu    init version
- *
+ *                          
  * ***************************************************************************/
 
 /******************************************************************************
@@ -1188,21 +1178,21 @@ endmodule
 //
 
 module dff2_unq6 (
-		input logic [23:0]  in[1:0],
-		input logic 		       clk, reset, en,
+		input logic [23:0]  in[1:0], 
+		input logic 		       clk, reset, en, 
 		output logic [23:0] out[1:0]
-		);
-
-   dff_unq7  dff_0
-     (.in(in[0]) ,
+		);	
+   
+   dff_unq7  dff_0 
+     (.in(in[0]) , 
       .clk(clk) , .reset(reset), .en(en),
       .out(out[0]));
-   dff_unq7  dff_1
-     (.in(in[1]) ,
+   dff_unq7  dff_1 
+     (.in(in[1]) , 
       .clk(clk) , .reset(reset), .en(en),
       .out(out[1]));
-
-endmodule
+   
+endmodule 
 //
 //---------------------------------------------------------------------------
 //  THIS FILE WAS AUTOMATICALLY GENERATED BY THE STANFORD GENESIS2 ENGINE
@@ -1210,12 +1200,12 @@ endmodule
 //  THIS VERSION OF GENESIS2 IS NOT TO BE USED FOR ANY COMMERCIAL USE
 //---------------------------------------------------------------------------
 //
-//
+//  
 //	-----------------------------------------------
 //	|            Genesis Release Info             |
 //	|  $Change: 11012 $ --- $Date: 2012/09/13 $   |
 //	-----------------------------------------------
-//
+//	
 //
 //  Source file: /afs/ir.stanford.edu/users/p/r/praina/ee271/project/rtl/dff3.vp
 //  Source template: dff3
@@ -1252,7 +1242,7 @@ endmodule
  * -----------
  * Date           Author    Description
  * Sep 20, 2012   jingpu    init version
- *
+ *                          
  * ***************************************************************************/
 
 /******************************************************************************
@@ -1270,25 +1260,25 @@ endmodule
 //
 
 module dff3_unq1 (
-		input logic [23:0]  in[2:0][2:0],
-		input logic 		       clk, reset, en,
+		input logic [23:0]  in[2:0][2:0], 
+		input logic 		       clk, reset, en, 
 		output logic [23:0] out[2:0][2:0]
-		);
-
-   dff2_unq1  dff2_0
-     (.in(in[0]) ,
+		);	
+   
+   dff2_unq1  dff2_0 
+     (.in(in[0]) , 
       .clk(clk) , .reset(reset), .en(en),
       .out(out[0]));
-   dff2_unq1  dff2_1
-     (.in(in[1]) ,
+   dff2_unq1  dff2_1 
+     (.in(in[1]) , 
       .clk(clk) , .reset(reset), .en(en),
       .out(out[1]));
-   dff2_unq1  dff2_2
-     (.in(in[2]) ,
+   dff2_unq1  dff2_2 
+     (.in(in[2]) , 
       .clk(clk) , .reset(reset), .en(en),
       .out(out[2]));
-
-endmodule
+   
+endmodule 
 //
 //---------------------------------------------------------------------------
 //  THIS FILE WAS AUTOMATICALLY GENERATED BY THE STANFORD GENESIS2 ENGINE
@@ -1296,12 +1286,12 @@ endmodule
 //  THIS VERSION OF GENESIS2 IS NOT TO BE USED FOR ANY COMMERCIAL USE
 //---------------------------------------------------------------------------
 //
-//
+//  
 //	-----------------------------------------------
 //	|            Genesis Release Info             |
 //	|  $Change: 11012 $ --- $Date: 2012/09/13 $   |
 //	-----------------------------------------------
-//
+//	
 //
 //  Source file: /afs/ir.stanford.edu/users/p/r/praina/ee271/project/rtl/dff3.vp
 //  Source template: dff3
@@ -1338,7 +1328,7 @@ endmodule
  * -----------
  * Date           Author    Description
  * Sep 20, 2012   jingpu    init version
- *
+ *                          
  * ***************************************************************************/
 
 /******************************************************************************
@@ -1356,21 +1346,21 @@ endmodule
 //
 
 module dff3_unq2 (
-		input logic [23:0]  in[1:0][1:0],
-		input logic 		       clk, reset, en,
+		input logic [23:0]  in[1:0][1:0], 
+		input logic 		       clk, reset, en, 
 		output logic [23:0] out[1:0][1:0]
-		);
-
-   dff2_unq2  dff2_0
-     (.in(in[0]) ,
+		);	
+   
+   dff2_unq2  dff2_0 
+     (.in(in[0]) , 
       .clk(clk) , .reset(reset), .en(en),
       .out(out[0]));
-   dff2_unq2  dff2_1
-     (.in(in[1]) ,
+   dff2_unq2  dff2_1 
+     (.in(in[1]) , 
       .clk(clk) , .reset(reset), .en(en),
       .out(out[1]));
-
-endmodule
+   
+endmodule 
 //
 //---------------------------------------------------------------------------
 //  THIS FILE WAS AUTOMATICALLY GENERATED BY THE STANFORD GENESIS2 ENGINE
@@ -1378,12 +1368,12 @@ endmodule
 //  THIS VERSION OF GENESIS2 IS NOT TO BE USED FOR ANY COMMERCIAL USE
 //---------------------------------------------------------------------------
 //
-//
+//  
 //	-----------------------------------------------
 //	|            Genesis Release Info             |
 //	|  $Change: 11012 $ --- $Date: 2012/09/13 $   |
 //	-----------------------------------------------
-//
+//	
 //
 //  Source file: /afs/ir.stanford.edu/users/p/r/praina/ee271/project/rtl/dff3.vp
 //  Source template: dff3
@@ -1420,7 +1410,7 @@ endmodule
  * -----------
  * Date           Author    Description
  * Sep 20, 2012   jingpu    init version
- *
+ *                          
  * ***************************************************************************/
 
 /******************************************************************************
@@ -1438,25 +1428,25 @@ endmodule
 //
 
 module dff3_unq3 (
-		input logic [23:0]  in[2:0][2:0],
-		input logic 		       clk, reset, en,
+		input logic [23:0]  in[2:0][2:0], 
+		input logic 		       clk, reset, en, 
 		output logic [23:0] out[2:0][2:0]
-		);
-
-   dff2_unq3  dff2_0
-     (.in(in[0]) ,
+		);	
+   
+   dff2_unq3  dff2_0 
+     (.in(in[0]) , 
       .clk(clk) , .reset(reset), .en(en),
       .out(out[0]));
-   dff2_unq3  dff2_1
-     (.in(in[1]) ,
+   dff2_unq3  dff2_1 
+     (.in(in[1]) , 
       .clk(clk) , .reset(reset), .en(en),
       .out(out[1]));
-   dff2_unq3  dff2_2
-     (.in(in[2]) ,
+   dff2_unq3  dff2_2 
+     (.in(in[2]) , 
       .clk(clk) , .reset(reset), .en(en),
       .out(out[2]));
-
-endmodule
+   
+endmodule 
 //
 //---------------------------------------------------------------------------
 //  THIS FILE WAS AUTOMATICALLY GENERATED BY THE STANFORD GENESIS2 ENGINE
@@ -1464,12 +1454,12 @@ endmodule
 //  THIS VERSION OF GENESIS2 IS NOT TO BE USED FOR ANY COMMERCIAL USE
 //---------------------------------------------------------------------------
 //
-//
+//  
 //	-----------------------------------------------
 //	|            Genesis Release Info             |
 //	|  $Change: 11012 $ --- $Date: 2012/09/13 $   |
 //	-----------------------------------------------
-//
+//	
 //
 //  Source file: /afs/ir.stanford.edu/users/p/r/praina/ee271/project/rtl/dff3.vp
 //  Source template: dff3
@@ -1506,7 +1496,7 @@ endmodule
  * -----------
  * Date           Author    Description
  * Sep 20, 2012   jingpu    init version
- *
+ *                          
  * ***************************************************************************/
 
 /******************************************************************************
@@ -1524,21 +1514,21 @@ endmodule
 //
 
 module dff3_unq4 (
-		input logic [23:0]  in[1:0][1:0],
-		input logic 		       clk, reset, en,
+		input logic [23:0]  in[1:0][1:0], 
+		input logic 		       clk, reset, en, 
 		output logic [23:0] out[1:0][1:0]
-		);
-
-   dff2_unq4  dff2_0
-     (.in(in[0]) ,
+		);	
+   
+   dff2_unq4  dff2_0 
+     (.in(in[0]) , 
       .clk(clk) , .reset(reset), .en(en),
       .out(out[0]));
-   dff2_unq4  dff2_1
-     (.in(in[1]) ,
+   dff2_unq4  dff2_1 
+     (.in(in[1]) , 
       .clk(clk) , .reset(reset), .en(en),
       .out(out[1]));
-
-endmodule
+   
+endmodule 
 //
 //---------------------------------------------------------------------------
 //  THIS FILE WAS AUTOMATICALLY GENERATED BY THE STANFORD GENESIS2 ENGINE
@@ -1546,12 +1536,12 @@ endmodule
 //  THIS VERSION OF GENESIS2 IS NOT TO BE USED FOR ANY COMMERCIAL USE
 //---------------------------------------------------------------------------
 //
-//
+//  
 //	-----------------------------------------------
 //	|            Genesis Release Info             |
 //	|  $Change: 11012 $ --- $Date: 2012/09/13 $   |
 //	-----------------------------------------------
-//
+//	
 //
 //  Source file: /afs/ir.stanford.edu/users/p/r/praina/ee271/project/rtl/dff3.vp
 //  Source template: dff3
@@ -1588,7 +1578,7 @@ endmodule
  * -----------
  * Date           Author    Description
  * Sep 20, 2012   jingpu    init version
- *
+ *                          
  * ***************************************************************************/
 
 /******************************************************************************
@@ -1606,25 +1596,25 @@ endmodule
 //
 
 module dff3_unq5 (
-		input logic [23:0]  in[2:0][2:0],
-		input logic 		       clk, reset, en,
+		input logic [23:0]  in[2:0][2:0], 
+		input logic 		       clk, reset, en, 
 		output logic [23:0] out[2:0][2:0]
-		);
-
-   dff2_unq5  dff2_0
-     (.in(in[0]) ,
+		);	
+   
+   dff2_unq5  dff2_0 
+     (.in(in[0]) , 
       .clk(clk) , .reset(reset), .en(en),
       .out(out[0]));
-   dff2_unq5  dff2_1
-     (.in(in[1]) ,
+   dff2_unq5  dff2_1 
+     (.in(in[1]) , 
       .clk(clk) , .reset(reset), .en(en),
       .out(out[1]));
-   dff2_unq5  dff2_2
-     (.in(in[2]) ,
+   dff2_unq5  dff2_2 
+     (.in(in[2]) , 
       .clk(clk) , .reset(reset), .en(en),
       .out(out[2]));
-
-endmodule
+   
+endmodule 
 //
 //---------------------------------------------------------------------------
 //  THIS FILE WAS AUTOMATICALLY GENERATED BY THE STANFORD GENESIS2 ENGINE
@@ -1632,12 +1622,12 @@ endmodule
 //  THIS VERSION OF GENESIS2 IS NOT TO BE USED FOR ANY COMMERCIAL USE
 //---------------------------------------------------------------------------
 //
-//
+//  
 //	-----------------------------------------------
 //	|            Genesis Release Info             |
 //	|  $Change: 11012 $ --- $Date: 2012/09/13 $   |
 //	-----------------------------------------------
-//
+//	
 //
 //  Source file: /afs/ir.stanford.edu/users/p/r/praina/ee271/project/rtl/dff.vp
 //  Source template: dff
@@ -1672,7 +1662,7 @@ endmodule
  * -----------
  * Date           Author    Description
  * Sep 20, 2012   jingpu    init version
- *
+ *                          
  * ***************************************************************************/
 
 /*******************************************************************************
@@ -1686,22 +1676,22 @@ endmodule
 //
 
 module dff_unq1 (
-		input logic [23:0]  in,
-		input logic 		    clk, reset, en,
+		input logic [23:0]  in, 
+		input logic 		    clk, reset, en, 
 		output logic [23:0] out
 		);
 
-
+   
    /* synopsys dc_tcl_script_begin
     set_ungroup [current_design] true
     set_flatten true -effort high -phase true -design [current_design]
-    set_dont_retime [current_design] false
+    set_dont_retime [current_design] false 
     set_optimize_registers true -design [current_design]
     */
-
+   
    //   DW03_pipe_reg #(2,24) dff ( .A(in) , .clk(clk) , .B(out) ) ;
    DW_pl_reg #(.stages(3),.in_reg(0),.out_reg(0),.width(24),.rst_mode(0)) dff ( .data_in(in) , .clk(clk) , .data_out(out), .rst_n(!reset), .enable({2{en}}) );
-
+   
 endmodule
 //
 //---------------------------------------------------------------------------
@@ -1710,12 +1700,12 @@ endmodule
 //  THIS VERSION OF GENESIS2 IS NOT TO BE USED FOR ANY COMMERCIAL USE
 //---------------------------------------------------------------------------
 //
-//
+//  
 //	-----------------------------------------------
 //	|            Genesis Release Info             |
 //	|  $Change: 11012 $ --- $Date: 2012/09/13 $   |
 //	-----------------------------------------------
-//
+//	
 //
 //  Source file: /afs/ir.stanford.edu/users/p/r/praina/ee271/project/rtl/dff.vp
 //  Source template: dff
@@ -1750,7 +1740,7 @@ endmodule
  * -----------
  * Date           Author    Description
  * Sep 20, 2012   jingpu    init version
- *
+ *                          
  * ***************************************************************************/
 
 /*******************************************************************************
@@ -1764,22 +1754,22 @@ endmodule
 //
 
 module dff_unq2 (
-		input logic [1:0]  in,
-		input logic 		    clk, reset, en,
+		input logic [1:0]  in, 
+		input logic 		    clk, reset, en, 
 		output logic [1:0] out
 		);
 
-
+   
    /* synopsys dc_tcl_script_begin
     set_ungroup [current_design] true
     set_flatten true -effort high -phase true -design [current_design]
-    set_dont_retime [current_design] false
+    set_dont_retime [current_design] false 
     set_optimize_registers true -design [current_design]
     */
-
+   
    //   DW03_pipe_reg #(2,2) dff ( .A(in) , .clk(clk) , .B(out) ) ;
    DW_pl_reg #(.stages(3),.in_reg(0),.out_reg(0),.width(2),.rst_mode(0)) dff ( .data_in(in) , .clk(clk) , .data_out(out), .rst_n(!reset), .enable({2{en}}) );
-
+   
 endmodule
 //
 //---------------------------------------------------------------------------
@@ -1788,12 +1778,12 @@ endmodule
 //  THIS VERSION OF GENESIS2 IS NOT TO BE USED FOR ANY COMMERCIAL USE
 //---------------------------------------------------------------------------
 //
-//
+//  
 //	-----------------------------------------------
 //	|            Genesis Release Info             |
 //	|  $Change: 11012 $ --- $Date: 2012/09/13 $   |
 //	-----------------------------------------------
-//
+//	
 //
 //  Source file: /afs/ir.stanford.edu/users/p/r/praina/ee271/project/rtl/dff.vp
 //  Source template: dff
@@ -1828,7 +1818,7 @@ endmodule
  * -----------
  * Date           Author    Description
  * Sep 20, 2012   jingpu    init version
- *
+ *                          
  * ***************************************************************************/
 
 /*******************************************************************************
@@ -1842,22 +1832,22 @@ endmodule
 //
 
 module dff_unq3 (
-		input logic [23:0]  in,
-		input logic 		    clk, reset, en,
+		input logic [23:0]  in, 
+		input logic 		    clk, reset, en, 
 		output logic [23:0] out
 		);
 
-
+   
    /* synopsys dc_tcl_script_begin
     set_ungroup [current_design] true
     set_flatten true -effort high -phase true -design [current_design]
     set_dont_retime [current_design] true
     set_optimize_registers false -design [current_design]
     */
-
+   
    //   DW03_pipe_reg #(1,24) dff ( .A(in) , .clk(clk) , .B(out) ) ;
    DW_pl_reg #(.stages(2),.in_reg(0),.out_reg(0),.width(24),.rst_mode(0)) dff ( .data_in(in) , .clk(clk) , .data_out(out), .rst_n(!reset), .enable({1{en}}) );
-
+   
 endmodule
 //
 //---------------------------------------------------------------------------
@@ -1866,12 +1856,12 @@ endmodule
 //  THIS VERSION OF GENESIS2 IS NOT TO BE USED FOR ANY COMMERCIAL USE
 //---------------------------------------------------------------------------
 //
-//
+//  
 //	-----------------------------------------------
 //	|            Genesis Release Info             |
 //	|  $Change: 11012 $ --- $Date: 2012/09/13 $   |
 //	-----------------------------------------------
-//
+//	
 //
 //  Source file: /afs/ir.stanford.edu/users/p/r/praina/ee271/project/rtl/dff.vp
 //  Source template: dff
@@ -1906,7 +1896,7 @@ endmodule
  * -----------
  * Date           Author    Description
  * Sep 20, 2012   jingpu    init version
- *
+ *                          
  * ***************************************************************************/
 
 /*******************************************************************************
@@ -1920,22 +1910,22 @@ endmodule
 //
 
 module dff_unq4 (
-		input logic [1:0]  in,
-		input logic 		    clk, reset, en,
+		input logic [1:0]  in, 
+		input logic 		    clk, reset, en, 
 		output logic [1:0] out
 		);
 
-
+   
    /* synopsys dc_tcl_script_begin
     set_ungroup [current_design] true
     set_flatten true -effort high -phase true -design [current_design]
     set_dont_retime [current_design] true
     set_optimize_registers false -design [current_design]
     */
-
+   
    //   DW03_pipe_reg #(1,2) dff ( .A(in) , .clk(clk) , .B(out) ) ;
    DW_pl_reg #(.stages(2),.in_reg(0),.out_reg(0),.width(2),.rst_mode(0)) dff ( .data_in(in) , .clk(clk) , .data_out(out), .rst_n(!reset), .enable({1{en}}) );
-
+   
 endmodule
 //
 //---------------------------------------------------------------------------
@@ -1944,12 +1934,12 @@ endmodule
 //  THIS VERSION OF GENESIS2 IS NOT TO BE USED FOR ANY COMMERCIAL USE
 //---------------------------------------------------------------------------
 //
-//
+//  
 //	-----------------------------------------------
 //	|            Genesis Release Info             |
 //	|  $Change: 11012 $ --- $Date: 2012/09/13 $   |
 //	-----------------------------------------------
-//
+//	
 //
 //  Source file: /afs/ir.stanford.edu/users/p/r/praina/ee271/project/rtl/dff.vp
 //  Source template: dff
@@ -1984,7 +1974,7 @@ endmodule
  * -----------
  * Date           Author    Description
  * Sep 20, 2012   jingpu    init version
- *
+ *                          
  * ***************************************************************************/
 
 /*******************************************************************************
@@ -1998,22 +1988,22 @@ endmodule
 //
 
 module dff_unq5 (
-		input logic [2:0]  in,
-		input logic 		    clk, reset, en,
+		input logic [2:0]  in, 
+		input logic 		    clk, reset, en, 
 		output logic [2:0] out
 		);
 
-
+   
    /* synopsys dc_tcl_script_begin
     set_ungroup [current_design] true
     set_flatten true -effort high -phase true -design [current_design]
     set_dont_retime [current_design] true
     set_optimize_registers false -design [current_design]
     */
-
+   
    //   DW03_pipe_reg #(1,3) dff ( .A(in) , .clk(clk) , .B(out) ) ;
    DW_pl_reg #(.stages(2),.in_reg(0),.out_reg(0),.width(3),.rst_mode(0)) dff ( .data_in(in) , .clk(clk) , .data_out(out), .rst_n(!reset), .enable({1{en}}) );
-
+   
 endmodule
 //
 //---------------------------------------------------------------------------
@@ -2022,12 +2012,12 @@ endmodule
 //  THIS VERSION OF GENESIS2 IS NOT TO BE USED FOR ANY COMMERCIAL USE
 //---------------------------------------------------------------------------
 //
-//
+//  
 //	-----------------------------------------------
 //	|            Genesis Release Info             |
 //	|  $Change: 11012 $ --- $Date: 2012/09/13 $   |
 //	-----------------------------------------------
-//
+//	
 //
 //  Source file: /afs/ir.stanford.edu/users/p/r/praina/ee271/project/rtl/dff.vp
 //  Source template: dff
@@ -2062,7 +2052,7 @@ endmodule
  * -----------
  * Date           Author    Description
  * Sep 20, 2012   jingpu    init version
- *
+ *                          
  * ***************************************************************************/
 
 /*******************************************************************************
@@ -2076,22 +2066,22 @@ endmodule
 //
 
 module dff_unq6 (
-		input logic [0:0]  in,
-		input logic 		    clk, reset, en,
+		input logic [0:0]  in, 
+		input logic 		    clk, reset, en, 
 		output logic [0:0] out
 		);
 
-
+   
    /* synopsys dc_tcl_script_begin
     set_ungroup [current_design] true
     set_flatten true -effort high -phase true -design [current_design]
     set_dont_retime [current_design] true
     set_optimize_registers false -design [current_design]
     */
-
+   
    //   DW03_pipe_reg #(1,1) dff ( .A(in) , .clk(clk) , .B(out) ) ;
    DW_pl_reg #(.stages(2),.in_reg(0),.out_reg(0),.width(1),.rst_mode(0)) dff ( .data_in(in) , .clk(clk) , .data_out(out), .rst_n(!reset), .enable({1{en}}) );
-
+   
 endmodule
 //
 //---------------------------------------------------------------------------
@@ -2100,12 +2090,12 @@ endmodule
 //  THIS VERSION OF GENESIS2 IS NOT TO BE USED FOR ANY COMMERCIAL USE
 //---------------------------------------------------------------------------
 //
-//
+//  
 //	-----------------------------------------------
 //	|            Genesis Release Info             |
 //	|  $Change: 11012 $ --- $Date: 2012/09/13 $   |
 //	-----------------------------------------------
-//
+//	
 //
 //  Source file: /afs/ir.stanford.edu/users/p/r/praina/ee271/project/rtl/dff.vp
 //  Source template: dff
@@ -2140,7 +2130,7 @@ endmodule
  * -----------
  * Date           Author    Description
  * Sep 20, 2012   jingpu    init version
- *
+ *                          
  * ***************************************************************************/
 
 /*******************************************************************************
@@ -2154,22 +2144,22 @@ endmodule
 //
 
 module dff_unq7 (
-		input logic [23:0]  in,
-		input logic 		    clk, reset, en,
+		input logic [23:0]  in, 
+		input logic 		    clk, reset, en, 
 		output logic [23:0] out
 		);
 
-
+   
    /* synopsys dc_tcl_script_begin
     set_ungroup [current_design] true
     set_flatten true -effort high -phase true -design [current_design]
-    set_dont_retime [current_design] false
+    set_dont_retime [current_design] false 
     set_optimize_registers true -design [current_design]
     */
-
+   
    //   DW03_pipe_reg #(1,24) dff ( .A(in) , .clk(clk) , .B(out) ) ;
    DW_pl_reg #(.stages(2),.in_reg(0),.out_reg(0),.width(24),.rst_mode(0)) dff ( .data_in(in) , .clk(clk) , .data_out(out), .rst_n(!reset), .enable({1{en}}) );
-
+   
 endmodule
 //
 //---------------------------------------------------------------------------
@@ -2178,12 +2168,12 @@ endmodule
 //  THIS VERSION OF GENESIS2 IS NOT TO BE USED FOR ANY COMMERCIAL USE
 //---------------------------------------------------------------------------
 //
-//
+//  
 //	-----------------------------------------------
 //	|            Genesis Release Info             |
 //	|  $Change: 11012 $ --- $Date: 2012/09/13 $   |
 //	-----------------------------------------------
-//
+//	
 //
 //  Source file: /afs/ir.stanford.edu/users/p/r/praina/ee271/project/rtl/dff.vp
 //  Source template: dff
@@ -2218,7 +2208,7 @@ endmodule
  * -----------
  * Date           Author    Description
  * Sep 20, 2012   jingpu    init version
- *
+ *                          
  * ***************************************************************************/
 
 /*******************************************************************************
@@ -2232,22 +2222,22 @@ endmodule
 //
 
 module dff_unq8 (
-		input logic [1:0]  in,
-		input logic 		    clk, reset, en,
+		input logic [1:0]  in, 
+		input logic 		    clk, reset, en, 
 		output logic [1:0] out
 		);
 
-
+   
    /* synopsys dc_tcl_script_begin
     set_ungroup [current_design] true
     set_flatten true -effort high -phase true -design [current_design]
-    set_dont_retime [current_design] false
+    set_dont_retime [current_design] false 
     set_optimize_registers true -design [current_design]
     */
-
+   
    //   DW03_pipe_reg #(1,2) dff ( .A(in) , .clk(clk) , .B(out) ) ;
    DW_pl_reg #(.stages(2),.in_reg(0),.out_reg(0),.width(2),.rst_mode(0)) dff ( .data_in(in) , .clk(clk) , .data_out(out), .rst_n(!reset), .enable({1{en}}) );
-
+   
 endmodule
 //
 //---------------------------------------------------------------------------
@@ -2256,12 +2246,12 @@ endmodule
 //  THIS VERSION OF GENESIS2 IS NOT TO BE USED FOR ANY COMMERCIAL USE
 //---------------------------------------------------------------------------
 //
-//
+//  
 //	-----------------------------------------------
 //	|            Genesis Release Info             |
 //	|  $Change: 11012 $ --- $Date: 2012/09/13 $   |
 //	-----------------------------------------------
-//
+//	
 //
 //  Source file: /afs/ir.stanford.edu/users/p/r/praina/ee271/project/rtl/dff.vp
 //  Source template: dff
@@ -2296,7 +2286,7 @@ endmodule
  * -----------
  * Date           Author    Description
  * Sep 20, 2012   jingpu    init version
- *
+ *                          
  * ***************************************************************************/
 
 /*******************************************************************************
@@ -2310,22 +2300,22 @@ endmodule
 //
 
 module dff_unq9 (
-		input logic [0:0]  in,
-		input logic 		    clk, reset, en,
+		input logic [0:0]  in, 
+		input logic 		    clk, reset, en, 
 		output logic [0:0] out
 		);
 
-
+   
    /* synopsys dc_tcl_script_begin
     set_ungroup [current_design] true
     set_flatten true -effort high -phase true -design [current_design]
-    set_dont_retime [current_design] false
+    set_dont_retime [current_design] false 
     set_optimize_registers true -design [current_design]
     */
-
+   
    //   DW03_pipe_reg #(1,1) dff ( .A(in) , .clk(clk) , .B(out) ) ;
    DW_pl_reg #(.stages(2),.in_reg(0),.out_reg(0),.width(1),.rst_mode(0)) dff ( .data_in(in) , .clk(clk) , .data_out(out), .rst_n(!reset), .enable({1{en}}) );
-
+   
 endmodule
 //
 //---------------------------------------------------------------------------
@@ -2334,12 +2324,12 @@ endmodule
 //  THIS VERSION OF GENESIS2 IS NOT TO BE USED FOR ANY COMMERCIAL USE
 //---------------------------------------------------------------------------
 //
-//
+//  
 //	-----------------------------------------------
 //	|            Genesis Release Info             |
 //	|  $Change: 11012 $ --- $Date: 2012/09/13 $   |
 //	-----------------------------------------------
-//
+//	
 //
 //  Source file: /afs/ir.stanford.edu/users/p/r/praina/ee271/project/rtl/hash_jtree.vp
 //  Source template: hash_jtree
@@ -2370,34 +2360,34 @@ endmodule
 
 /*
  *  Hashing Function
- *
+ * 
  *  Inputs:
  *    MicroPolygon and Sample Information
- *
+ * 
  *  Outputs:
  *    Jittered Sample Position and Buffered Micropolygon
- *
+ * 
  *  Function:
  *    Calc on offset for the sample.  This is used for
- *    stochastic sampling reasons.  Note that this is
- *    a simplified hashing mechanism.  An in depth
+ *    stochastic sampling reasons.  Note that this is 
+ *    a simplified hashing mechanism.  An in depth 
  *    discussion of stochastic sampling in rendering
  *    can be found here:
- *    http://doi.acm.org/10.1145/7529.8927
- *
- *
+ *    http://doi.acm.org/10.1145/7529.8927 
+ * 
+ *    
  * Long Description:
  *    The basic idea is to use a tree of xor
- *    functions to generate a displacement
+ *    functions to generate a displacement 
  *    from the sample center.
- *
- *
+ * 
+ * 
  *   Author: John Brunhaver
  *   Created:      Thu 10/01/10
  *   Last Updated: Tue 10/15/10
  *
- *   Copyright 2009 <jbrunhaver@gmail.com>
- *
+ *   Copyright 2009 <jbrunhaver@gmail.com>   
+ *  
  */
 
 /* ***************************************************************************
@@ -2405,7 +2395,7 @@ endmodule
  * -----------
  * Date           Author    Description
  * Sep 19, 2012   jingpu    ported from John's original code to Genesis
- *
+ *                          
  * ***************************************************************************/
 
 /******************************************************************************
@@ -2423,17 +2413,17 @@ endmodule
 //
 // PipelineDepth (_GENESIS2_INHERITANCE_PRIORITY_) = 2
 //
-
+ 
 /* A Note on Signal Names:
  *
- * Most signals have a suffix of the form _RxxN
+ * Most signals have a suffix of the form _RxxN 
  * where R indicates that it is a Raster Block signal
  * xx indicates the clock slice that it belongs to
  * and N indicates the type of signal that it is.
  * H indicates logic high, L indicates logic low,
  * U indicates unsigned fixed point, and S indicates
  * signed fixed point.
- *
+ * 
  */
 
 
@@ -2450,35 +2440,35 @@ module hash_jtree_unq1
   //Global Signals
   input	logic	                     clk,                // Clock
   input logic	                     rst,                // Reset
-
+ 
   //Control Signals
-  input  logic          [3:0]        subSample_RnnnnU ,   //Subsample width
+  input  logic          [3:0]        subSample_RnnnnU ,   //Subsample width 
 
   //Outputs
   output logic signed   [24-1:0] poly_R16S[3-1:0][3-1:0], // Micropolygon to Iterate Over
   output logic unsigned [24-1:0] color_R16U[3-1:0] ,        // Color of Poly
-  output logic signed   [24-1:0] sample_R16S[1:0],               // Sample Location
+  output logic signed   [24-1:0] sample_R16S[1:0],               // Sample Location    
   output logic                       validSamp_R16H,                 // A valid sample location
   output logic                       isQuad_R16H                     //Micropolygon is quad
 
  );
-
-
+   
+   
    // output for retiming registers
    logic signed [24-1:0]     poly_R16S_retime[3-1:0][3-1:0]; // Micropolygon to Iterate Over
    logic 			     unsigned [24-1:0]   color_R16U_retime[3-1:0];      // Color of Poly
-   logic signed [24-1:0]     sample_R16S_retime[1:0];   // Sample Location
+   logic signed [24-1:0]     sample_R16S_retime[1:0];   // Sample Location    
    logic 			     validSamp_R16H_retime;                    // A valid sample location
-   logic 			     isQuad_R16H_retime;   //Micropolygon is quad
+   logic 			     isQuad_R16H_retime;   //Micropolygon is quad  
    // output for retiming registers
-
-
+   
+   
    logic [8-1:0] 	     hash_mask_R14H ;
    logic [8-1:0] 	     jitt_val_R14H[1:0] ;
    logic [24-1:0] 		     sample_jitted_R14S[1:0] ;
 
-
-
+   
+   
    always_comb begin
       assert( $onehot(subSample_RnnnnU) ) ;
       unique case ( 1'b1 )
@@ -2491,38 +2481,38 @@ module hash_jtree_unq1
 
    /*always @( posedge clk ) begin
       #100;
-     $display( "SV: %.10x %.10x \n" ,
+     $display( "SV: %.10x %.10x \n" , 
 		{ sample_R14S[1][24-1:4] , sample_R14S[0][24-1:4]} ,
 		{ sample_R14S[0][24-1:4] , sample_R14S[1][24-1:4]} );
 
-      $display( "SV:  %.8b %.8b %.8b %.8b \n" ,
+      $display( "SV:  %.8b %.8b %.8b %.8b \n" , 
 	       xjit_hash.arr32_RnnH[31:24], xjit_hash.arr32_RnnH[23:16],
 	       xjit_hash.arr32_RnnH[15:8], xjit_hash.arr32_RnnH[7:0]);
-      $display( "SV: %.8b %.8b \n" ,
-		xjit_hash.arr16_RnnH[15:8], xjit_hash.arr16_RnnH[7:0]);
-      $display( "SV: %.8b \n" ,
+      $display( "SV: %.8b %.8b \n" , 
+		xjit_hash.arr16_RnnH[15:8], xjit_hash.arr16_RnnH[7:0]);  
+      $display( "SV: %.8b \n" , 
 		xjit_hash.arr16_RnnH[15:8] ^ xjit_hash.arr16_RnnH[7:0] );
-      $display( "SV: %.8b \n" ,
+      $display( "SV: %.8b \n" , 
 		 jitt_val_R14H[0]);
-
-      $display( "SV:  %.8b %.8b %.8b %.8b \n" ,
+ 
+      $display( "SV:  %.8b %.8b %.8b %.8b \n" , 
 	       yjit_hash.arr32_RnnH[31:24], yjit_hash.arr32_RnnH[23:16],
 	       yjit_hash.arr32_RnnH[15:8], yjit_hash.arr32_RnnH[7:0]);
-      $display( "SV: %.8b %.8b  \n" ,
-		yjit_hash.arr16_RnnH[15:8], yjit_hash.arr16_RnnH[7:0]);
-      $display( "SV: %.8b \n" ,
+      $display( "SV: %.8b %.8b  \n" , 
+		yjit_hash.arr16_RnnH[15:8], yjit_hash.arr16_RnnH[7:0]);  
+      $display( "SV: %.8b \n" , 
 		yjit_hash.arr16_RnnH[15:8] ^ yjit_hash.arr16_RnnH[7:0] );
-      $display( "SV: %.8b \n" ,
+      $display( "SV: %.8b \n" , 
 		 jitt_val_R14H[1]);
 
    end*/
-
+   
    tree_hash_unq1   xjit_hash (
 	      .in_RnnH( { sample_R14S[1][24-1:4] , sample_R14S[0][24-1:4]}   ),
 	      .mask_RnnH( hash_mask_R14H ),
 	      .out_RnnH( jitt_val_R14H[0] )
 	      );
-
+   
    tree_hash_unq1   yjit_hash (
 	      .in_RnnH( { sample_R14S[0][24-1:4] , sample_R14S[1][24-1:4]} ),
 	      .mask_RnnH( hash_mask_R14H ),
@@ -2530,72 +2520,72 @@ module hash_jtree_unq1
 	      );
 
    //Jitter the sample coordinates
-   assign sample_jitted_R14S[0] =  { sample_R14S[0][24-1:0] }
+   assign sample_jitted_R14S[0] =  { sample_R14S[0][24-1:0] }       
                                  | { 14'b0,                 //23:10 = 14 bits
 				     jitt_val_R14H[0][8-1:0], //7:0 = 8 bits
-                                     2'b0 };     //1:0 = 2 bits  ==> 24 bits total
-
+                                     2'b0 };     //1:0 = 2 bits  ==> 24 bits total  
+   
    //Jitter the sample coordinates
-   assign sample_jitted_R14S[1] =  { sample_R14S[1][24-1:0] }
+   assign sample_jitted_R14S[1] =  { sample_R14S[1][24-1:0] }       
                                  | { 14'b0,                 //23:10 = 14 bits
 				     jitt_val_R14H[1][8-1:0], //7:0 = 8 bits
-                                     2'b0 };     //1:0 = 2 bits  ==> 24 bits total
+                                     2'b0 };     //1:0 = 2 bits  ==> 24 bits total  
 
+  
 
-
-   //Flop R14 to R16_retime with retiming registers
+   //Flop R14 to R16_retime with retiming registers	
 	dff3_unq5  d_hash_r1 (
-					 .in(poly_R14S) ,
+					 .in(poly_R14S) , 
 				     .clk(clk) , .reset(rst), .en(1'b1),
 				     .out(poly_R16S_retime));
-
+					 
 	dff2_unq5  d_hash_r2 (
-					 .in(color_R14U) ,
+					 .in(color_R14U) , 
 				     .clk(clk) , .reset(rst), .en(1'b1),
 				     .out(color_R16U_retime));
-
+					 
 	dff2_unq6  d_hash_r3 (
-					 .in(sample_jitted_R14S) ,
+					 .in(sample_jitted_R14S) , 
 				     .clk(clk) , .reset(rst), .en(1'b1),
-				     .out(sample_R16S_retime));
-
+				     .out(sample_R16S_retime));	
+					 
 	dff_unq8  d_hash_r4 (
-				     .in({validSamp_R14H, isQuad_R14H}) ,
+				     .in({validSamp_R14H, isQuad_R14H}) , 
 				     .clk(clk) , .reset(rst), .en(1'b1),
-				     .out({validSamp_R16H_retime, isQuad_R16H_retime}));
-   //Flop R14 to R16_retime with retiming registers
+				     .out({validSamp_R16H_retime, isQuad_R16H_retime}));		
+   //Flop R14 to R16_retime with retiming registers			
 
 
-
-
+	
+   
 	//Flop R16_retime to R16 with fixed registers
 	dff3_unq3  d_hash_f1 (
-					 .in(poly_R16S_retime) ,
+					 .in(poly_R16S_retime) , 
 				     .clk(clk) , .reset(rst), .en(1'b1),
 				     .out(poly_R16S));
-
+					 
 	dff2_unq3  d_hash_f2 (
-					 .in(color_R16U_retime) ,
+					 .in(color_R16U_retime) , 
 				     .clk(clk) , .reset(rst), .en(1'b1),
 				     .out(color_R16U));
-
+					 
 	dff2_unq4  d_hash_f3 (
-					 .in(sample_R16S_retime) ,
+					 .in(sample_R16S_retime) , 
 				     .clk(clk) , .reset(rst), .en(1'b1),
-				     .out(sample_R16S));
-
+				     .out(sample_R16S));	
+					 
 	dff_unq4  d_hash_f4 (
-				     .in({validSamp_R16H_retime, isQuad_R16H_retime}) ,
+				     .in({validSamp_R16H_retime, isQuad_R16H_retime}) , 
 				     .clk(clk) , .reset(rst), .en(1'b1),
-				     .out({validSamp_R16H, isQuad_R16H}));
-	//Flop R16_retime to R16 with fixed registers
+				     .out({validSamp_R16H, isQuad_R16H}));	
+	//Flop R16_retime to R16 with fixed registers				 
+	
+
+   
+endmodule 
 
 
-
-endmodule
-
-
-
+   
 //
 //---------------------------------------------------------------------------
 //  THIS FILE WAS AUTOMATICALLY GENERATED BY THE STANFORD GENESIS2 ENGINE
@@ -2603,12 +2593,12 @@ endmodule
 //  THIS VERSION OF GENESIS2 IS NOT TO BE USED FOR ANY COMMERCIAL USE
 //---------------------------------------------------------------------------
 //
-//
+//  
 //	-----------------------------------------------
 //	|            Genesis Release Info             |
 //	|  $Change: 11012 $ --- $Date: 2012/09/13 $   |
 //	-----------------------------------------------
-//
+//	
 //
 //  Source file: /afs/ir.stanford.edu/users/p/r/praina/ee271/project/rtl/sampletest.vp
 //  Source template: sampletest
@@ -2639,15 +2629,15 @@ endmodule
 
 /*
  *  Performs Sample Test on Micropolygon
- *
+ * 
  *  Inputs:
  *    Sample and MicroPolygon Information
- *
+ * 
  *  Outputs:
  *    Subsample Hit Flag, Subsample location, and Micropolygon Information
- *
+ * 
  *  Function:
- *    Utilizing Edge Equations determine whether the
+ *    Utilizing Edge Equations determine whether the 
  *    sample location lies inside the micropolygon.
  *    In the simple case of the triangle, this will
  *    occur when the sample lies to one side of all
@@ -2655,32 +2645,32 @@ endmodule
  *    This corresponds to the minterm 000 and 111.
  *    Additionally, if backface culling is performed,
  *    then only keep the case of all right.
- *
+ * 
  *  Edge Equation:
- *    For an edge defined as travelling from the
+ *    For an edge defined as travelling from the 
  *    vertice (x_1,y_1) to (x_2,y_2), the sample
  *    (x_s,y_s) lies to the right of the line
  *    if the following expression is true:
- *
+ * 
  *    0 >  ( x_2 - x_1 ) * ( y_s - y_1 ) - ( x_s - x_1 ) * ( y_2 - y_1 )
- *
- *    otherwise it lies on the line (exactly 0) or
+ *  
+ *    otherwise it lies on the line (exactly 0) or 
  *    to the left of the line.
  *
  *    This block evaluates the six edges described by the
  *    micropolygons vertices,  to determine which
  *    side of the lines the sample point lies.  Then it
  *    determines if the sample point lies in the micropolygon
- *    by or'ing the appropriate minterms.  In the case of
+ *    by or'ing the appropriate minterms.  In the case of 
  *    the triangle only three edges are relevant.  In the
  *    case of the quadrilateral five edges are relevant.
- *
- *
+ *  
+ * 
  *   Author: John Brunhaver
  *   Created:      Thu 07/23/09
  *   Last Updated: Tue 10/06/10
  *
- *   Copyright 2009 <jbrunhaver@gmail.com>
+ *   Copyright 2009 <jbrunhaver@gmail.com>   
  *
  *
  */
@@ -2704,47 +2694,47 @@ endmodule
 
 /* A Note on Signal Names:
  *
- * Most signals have a suffix of the form _RxxxxN
+ * Most signals have a suffix of the form _RxxxxN 
  * where R indicates that it is a Raster Block signal
  * xxxx indicates the clock slice that it belongs to
  * and N indicates the type of signal that it is.
  * H indicates logic high, L indicates logic low,
  * U indicates unsigned fixed point, and S indicates
  * signed fixed point.
- *
+ * 
  */
 
 
 
 module  sampletest_unq1
-  (
+  ( 
     input logic signed [24-1:0]  poly_R16S[3-1:0][3-1:0], // Micropolygon to Iterate Over
     input logic 			 unsigned [24-1:0] color_R16U[3-1:0] , // Color of Poly
-    input logic signed [24-1:0]  sample_R16S[1:0], // Sample Location
+    input logic signed [24-1:0]  sample_R16S[1:0], // Sample Location    
     input logic 			 validSamp_R16H, // A valid sample location
     input logic 			 isQuad_R16H, //Micropolygon is quad
 
     input logic 			 clk, // Clock
     input logic 			 rst, // Reset
-
+  
     output logic signed [24-1:0] hit_R18S[3-1:0], // Hit Location
     output logic 			 unsigned [24-1:0] color_R18U[3-1:0] , // Color of Poly
     output logic 			 hit_valid_R18H                   // Is hit good
     );
-
-   // output for retiming registers
+   
+   // output for retiming registers	
    logic signed [24-1:0] 	 hit_R18S_retime[3-1:0];   // Hit Location
    logic 				 unsigned [24-1:0]  color_R18U_retime[3-1:0];   // Color of Poly
    logic 				 hit_valid_R18H_retime;   // Is hit good
-   // output for retiming registers
-
-   // Signals in Access Order
-   logic signed [24-1:0] 	 poly_shift_R16S[3-1:0][1:0]; // Micropolygon after coordinate shift
-   logic signed [24-1:0] 	 edge_R16S[3-1:0][1:0][1:0]; // Edges
+   // output for retiming registers	
+   
+   // Signals in Access Order  
+   logic signed [24-1:0] 	 poly_shift_R16S[3-1:0][1:0]; // Micropolygon after coordinate shift 
+   logic signed [24-1:0] 	 edge_R16S[3-1:0][1:0][1:0]; // Edges 
    logic signed [2*24-1:0] 	 dist_lg_R16S[3-1:0]; // Result of x_1 * y_2 - x_2 * y_1
    logic 				 hit_valid_R16H ; // Output (YOUR JOB!)
    logic signed [24-1:0] 	 hit_R16S[3-1:0]; // Sample position
-   // Signals in Access Order
+   // Signals in Access Order 
 
    //////// DECLARE OTHER INTERMEDIATE SIGNALS YOU NEED
    logic [3-1:0]     edge_chk1_R16;
@@ -2795,15 +2785,15 @@ module  sampletest_unq1
    always_comb begin
       dist_lg_R16S[0] =     edge_R16S[0][0][0] * edge_R16S[0][1][1]
      -  edge_R16S[0][0][1] * edge_R16S[0][1][0];
-   end
+   end      
    always_comb begin
       dist_lg_R16S[1] =     edge_R16S[1][0][0] * edge_R16S[1][1][1]
      -  edge_R16S[1][0][1] * edge_R16S[1][1][0];
-   end
+   end      
    always_comb begin
       dist_lg_R16S[2] =     edge_R16S[2][0][0] * edge_R16S[2][1][1]
      -  edge_R16S[2][0][1] * edge_R16S[2][1][0];
-   end
+   end      
 
    // (4) Check distance and assign hit_valid_R16H.
 
@@ -2811,15 +2801,15 @@ module  sampletest_unq1
       edge_chk1_R16[0] =  dist_lg_R16S[0]  <=  0 ;
       edge_chk1_R16[1] =  dist_lg_R16S[1]  <   0 ;
       edge_chk1_R16[2] =  dist_lg_R16S[2]  <=  0 ;
-   end
+   end  
 
    assign hit_valid_R16H = & {edge_chk1_R16[2:0], validSamp_R16H}; //Back Face Cull Case
 
 
 
 
-
-
+   
+   
    //Calculate Depth as depth of first vertex
    // Note that a barrycentric interpolation would
    // be more accurate
@@ -2831,43 +2821,43 @@ module  sampletest_unq1
 
 
    /* Flop R16 to R18_retime with retiming registers*/
-
+   
    dff2_unq5  d_samp_r1 (
-				.in(hit_R16S) ,
+				.in(hit_R16S) , 
 				.clk(clk) , .reset(rst), .en(1'b1),
 				.out(hit_R18S_retime));
-
+   
    dff2_unq5  d_samp_r2(
-			       .in(color_R16U) ,
+			       .in(color_R16U) , 
 			       .clk(clk) , .reset(rst), .en(1'b1),
 			       .out(color_R18U_retime));
-
+   
    dff_unq9  d_samp_r3 (
-				.in(hit_valid_R16H) ,
+				.in(hit_valid_R16H) , 
 				.clk(clk) , .reset(rst), .en(1'b1),
 				.out(hit_valid_R18H_retime));
-
+   
    /* Flop R16 to R18_retime with retiming registers*/
-
-
+   
+   
    /* Flop R18_retime to R18 with fixed registers */
-
+   
    dff2_unq3  d_samp_f1 (
-				.in(hit_R18S_retime) ,
+				.in(hit_R18S_retime) , 
 				.clk(clk) , .reset(rst), .en(1'b1),
 				.out(hit_R18S));
-
+   
    dff2_unq3  d_samp_f2(
-			       .in(color_R18U_retime) ,
+			       .in(color_R18U_retime) , 
 			       .clk(clk) , .reset(rst), .en(1'b1),
 			       .out(color_R18U));
-
+   
    dff_unq6  d_samp_f3 (
-				.in(hit_valid_R18H_retime) ,
+				.in(hit_valid_R18H_retime) , 
 				.clk(clk) , .reset(rst), .en(1'b1),
 				.out(hit_valid_R18H));
-
-   /* Flop R18_retime to R18 with fixed registers */
+   
+   /* Flop R18_retime to R18 with fixed registers */ 
 
 endmodule
 
@@ -2880,12 +2870,12 @@ endmodule
 //  THIS VERSION OF GENESIS2 IS NOT TO BE USED FOR ANY COMMERCIAL USE
 //---------------------------------------------------------------------------
 //
-//
+//  
 //	-----------------------------------------------
 //	|            Genesis Release Info             |
 //	|  $Change: 11012 $ --- $Date: 2012/09/13 $   |
 //	-----------------------------------------------
-//
+//	
 //
 //  Source file: /afs/ir.stanford.edu/users/p/r/praina/ee271/project/rtl/test_iterator.vp
 //  Source template: test_iterator
@@ -2916,48 +2906,48 @@ endmodule
 
 /*
  *  Bounding Box Sample Test Iteration
- *
+ * 
  *  Inputs:
  *    BBox and MicroPolygon Information
- *
+ * 
  *  Outputs:
  *    Subsample location and Micropolygon Information
- *
+ * 
  *  Function:
  *    Iterate from left to right bottom to top
  *    across the bounding box.
- *
+ * 
  *    While iterating set the halt signal in
  *    order to hold the bounding box pipeline in
- *    place.
- *
- *
+ *    place.  
+ * 
+ *    
  * Long Description:
  *    The iterator starts in the waiting state,
  *    when a valid micropolygon bounding box
  *    appears at the input. It will enter the
- *    testing state the next cycle with a
- *    sample equivelant to the lower left
+ *    testing state the next cycle with a 
+ *    sample equivelant to the lower left 
  *    cooridinate of the bounding box.
- *
+ * 
  *    While in the testing state, the next sample
- *    for each cycle should be one sample interval
+ *    for each cycle should be one sample interval 
  *    to the right, except when the current sample
  *    is at the right edge.  If the current sample
  *    is at the right edge, the next sample should
  *    be one row up.  Additionally, if the current
  *    sample is on the top row and the right edge,
- *    next cycles sample should be invalid and
+ *    next cycles sample should be invalid and 
  *    equivelant to the lower left vertice and
  *    next cycles state should be waiting.
- *
- *
+ * 
+ * 
  *   Author: John Brunhaver
  *   Created:      Thu 07/23/09
  *   Last Updated: Tue 10/01/10
  *
- *   Copyright 2009 <jbrunhaver@gmail.com>
- *
+ *   Copyright 2009 <jbrunhaver@gmail.com>   
+ *  
  */
 
 /* ***************************************************************************
@@ -2965,7 +2955,7 @@ endmodule
  * -----------
  * Date           Author    Description
  * Sep 19, 2012   jingpu    ported from John's original code to Genesis
- *
+ *                          
  * ***************************************************************************/
 
 /******************************************************************************
@@ -2988,31 +2978,31 @@ endmodule
 
 /* A Note on Signal Names:
  *
- * Most signals have a suffix of the form _RxxN
+ * Most signals have a suffix of the form _RxxN 
  * where R indicates that it is a Raster Block signal
  * xx indicates the clock slice that it belongs to
  * and N indicates the type of signal that it is.
  * H indicates logic high, L indicates logic low,
  * U indicates unsigned fixed point, and S indicates
  * signed fixed point.
- *
+ * 
  * For all the signed fixed point signals (logic signed [24-1:0]),
  * their highest 14 bits, namely [23:10]
- * represent the integer part of the fixed point number,
+ * represent the integer part of the fixed point number, 
  * while the lowest 10 bits, namely [9:0]
  * represent the fractional part of the fixed point number.
- *
- *
- *
+ * 
+ * 
+ * 
  * For signal subSample_RnnnnU (logic [3:0])
  * 1000 for  1x MSAA eq to 1 sample per pixel
- * 0100 for  4x MSAA eq to 4 samples per pixel,
+ * 0100 for  4x MSAA eq to 4 samples per pixel, 
  *              a sample is half a pixel on a side
  * 0010 for 16x MSAA eq to 16 sample per pixel,
- *              a sample is a quarter pixel on a side.
- * 0001 for 64x MSAA eq to 64 samples per pixel,
+ *              a sample is a quarter pixel on a side.  
+ * 0001 for 64x MSAA eq to 64 samples per pixel, 
  *              a sample is an eighth of a pixel on a side.
- *
+ * 
  */
 
 
@@ -3026,7 +3016,7 @@ module test_iterator_unq1
    input logic 				validPoly_R13H, //Micropolygon is valid
 
    //Control Signals
-   input logic [3:0] 			subSample_RnnnnU , //Subsample width
+   input logic [3:0] 			subSample_RnnnnU , //Subsample width 
    output logic 			halt_RnnnnL , //Halt -> hold current micropoly
    //Note that this block generates
    //Global Signals
@@ -3040,83 +3030,85 @@ module test_iterator_unq1
    output logic 			isQuad_R14H, //Micropygon is quad
    output logic 			validSamp_R14H                   //Sample and Micropolygon are Valid
    );
-
-
+   
+   
    // This module implement a Moore machine to iterarte sample points in bbox
-   // Recall: a Moore machine is an FSM whose output values are determined
+   // Recall: a Moore machine is an FSM whose output values are determined 
    // solely by its current state.
    // A simple way to build a Moore machine is to make states for every output
    // and the values of the current states are the outputs themselves
-
-   // Now we create the signals for the next states of each outputs and
+   
+   // Now we create the signals for the next states of each outputs and 
    // then instantiate registers for storing these states
-   logic signed [24-1:0] 	next_poly_R14S[3-1:0][3-1:0];
+   logic signed [24-1:0] 	next_poly_R14S[3-1:0][3-1:0]; 
    logic unsigned  [24-1:0] next_color_R14U[3-1:0] ;
-   logic signed [24-1:0] 	next_sample_R14S[1:0];
-   logic 				next_isQuad_R14H;
-   logic 				next_validSamp_R14H;
+   logic signed [24-1:0] 	next_sample_R14S[1:0];  
+   logic 				next_isQuad_R14H;                   
+   logic 				next_validSamp_R14H;                 
    logic 				next_halt_RnnnnL;
-
-
+   
+   
    // Instantiate registers for storing these states
    dff3_unq3  d301(
-			  .in(next_poly_R14S) ,
+			  .in(next_poly_R14S) , 
 			  .clk(clk) , .reset(rst), .en(1'b1),
 			  .out(poly_R14S));
-
+   
    dff2_unq3  d302 (
-			   .in(next_color_R14U) ,
+			   .in(next_color_R14U) , 
 			   .clk(clk) , .reset(rst), .en(1'b1),
 			   .out(color_R14U));
-
+   
    dff2_unq4  d303 (
-			   .in(next_sample_R14S) ,
+			   .in(next_sample_R14S) , 
 			   .clk(clk) , .reset(rst), .en(1'b1),
-			   .out(sample_R14S));
-
+			   .out(sample_R14S));				 
+   
    dff_unq5  d304 (
-			   .in({next_validSamp_R14H, next_isQuad_R14H, next_halt_RnnnnL}) ,
+			   .in({next_validSamp_R14H, next_isQuad_R14H, next_halt_RnnnnL}) , 
 			   .clk(clk) , .reset(rst), .en(1'b1),
 			   .out({validSamp_R14H, isQuad_R14H, halt_RnnnnL}));
    // Instantiate registers for storing these states
+   
 
-
-
-
+   
+   
    //////
    //////  RTL code for original FSM Goes Here
    //////
-
+   
    // To build this FSM we want to have two more state: one is the working
    // status of this FSM, and the other is the current bounding box where
    // we iterate sample points
-
+   
    // define two more states, box_R14S and state_R14H
    logic signed [24-1:0] 	box_R14S[1:0][1:0];    		// the state for current bounding box
    logic signed [24-1:0] 	next_box_R14S[1:0][1:0];
    typedef enum logic {
 			 WAIT_STATE, TEST_STATE
-		       } state_t;
+		       } state_t;  
    state_t                        state_R14H;     //State Designation (Waiting or Testing)
-   state_t                        next_state_R14H;        //Next Cycles State
-
+   state_t                        next_state_R14H;        //Next Cycles State 
+   
    // instantiate registers for storing these two states
    dff3_unq4  d305 (
-			   .in(next_box_R14S) ,
+			   .in(next_box_R14S) , 
 			   .clk(clk) , .reset(rst), .en(1'b1),
 			   .out(box_R14S));
-
+   
 
    wire         state_R14H_b;
+   
+//   assign state_R14H_b = (state_R14H == WAIT_STATE ? 1'b1 : 1'b0);
 
-   assign state_R14H_b = (state_R14H == WAIT_STATE ? 1'b1 : 1'b0);
-
+   assign state_R14H = (state_R14H_b == 1'b1 ? TEST_STATE : WAIT_STATE);
+   
    dff_unq6  d306 (
-			   .in(next_state_R14H) ,
+			   .in(next_state_R14H) , 
 			   .clk(clk) , .reset(rst), .en(1'b1),
 			   .out(state_R14H_b));
-
-
+   
+   
    // define some helper signals
    logic signed [24-1:0] 	next_up_samp_R14S[1:0]; //If jump up, next sample
    logic signed [24-1:0] 	next_rt_samp_R14S[1:0]; //If jump right, next sample
@@ -3128,33 +3120,33 @@ module test_iterator_unq1
    ////// First calculate the values of the helper signals using CURRENT STATES
    //////
 
-   // check the comments 'A Note on Signal Names'
+   // check the comments 'A Note on Signal Names' 
    // at the begining of the module for the help on
    // understanding the signals here
-
+   
    ////// PLACE YOUR CODE HERE
 
    always_comb begin
       at_right_edg_R14H = sample_R14S[0] == box_R14S[1][0];
       at_top_edg_R14H   = sample_R14S[1] == box_R14S[1][1];
       at_end_box_R14H   = at_right_edg_R14H && at_top_edg_R14H;
-
+      
       next_rt_samp_R14S[0] = sample_R14S[0] +
       (subSample_RnnnnU << (10-3));
       next_rt_samp_R14S[1] = sample_R14S[1];
       next_up_samp_R14S[0] = box_R14S[0][0];
       next_up_samp_R14S[1] = sample_R14S[1] +
       (subSample_RnnnnU << (10-3));
-   end
+   end 
 
-
+   
    //////
    ////// Then complete the following combinational logic defining the
    ////// next states
    //////
 
    ////// COMPLETE THE FOLLOW ALWAYS_COMB BLOCK
-
+   
    // Combinational logic for state transitions
    always_comb begin
       unique case( state_R14H )
@@ -3176,7 +3168,7 @@ module test_iterator_unq1
      next_sample_R14S[1]    =  at_end_box_R14H ? box_R14S[0][1] :
                                  (at_right_edg_R14H ?
                                    next_up_samp_R14S[1] :
-                                   next_rt_samp_R14S[1]);
+                                   next_rt_samp_R14S[1]);   
       next_validSamp_R14H =  at_end_box_R14H ? 0 : 1;
       next_isQuad_R14H    =  isQuad_R14H;
       next_state_R14H     =  at_end_box_R14H ? WAIT_STATE : TEST_STATE;
@@ -3184,12 +3176,12 @@ module test_iterator_unq1
       next_color_R14U     =  color_R14U;
       next_box_R14S       =  box_R14S;
       next_halt_RnnnnL    =  at_end_box_R14H;
-   end
+   end      
       endcase // case ( state_R14H )
-
+      
    end // always_comb
-
-
+   
+   
    //////
    //////  RTL code for original FSM Finishes
    //////
@@ -3198,7 +3190,7 @@ module test_iterator_unq1
    //Some Error Checking Assertions
 
    //Define a Less Than Property
-   //
+   //  
    //  a should be less than b
    property rb_lt( rst, a , b , c );
       @(posedge clk) rst | ((a<=b) | !c);
@@ -3216,7 +3208,7 @@ module test_iterator_unq1
 
 
 
-
+   
 
 
 endmodule
@@ -3230,12 +3222,12 @@ endmodule
 //  THIS VERSION OF GENESIS2 IS NOT TO BE USED FOR ANY COMMERCIAL USE
 //---------------------------------------------------------------------------
 //
-//
+//  
 //	-----------------------------------------------
 //	|            Genesis Release Info             |
 //	|  $Change: 11012 $ --- $Date: 2012/09/13 $   |
 //	-----------------------------------------------
-//
+//	
 //
 //  Source file: /afs/ir.stanford.edu/users/p/r/praina/ee271/project/rtl/tree_hash.vp
 //  Source template: tree_hash
@@ -3262,24 +3254,24 @@ endmodule
 
 /*
  *  Hashing Function
- *
+ * 
  *  Inputs:
  *    N-Wide Signal
- *
+ * 
  *  Outputs:
  *    M-Bit Hashed signal
- *
+ * 
  *  Function:
  *    Calc a simple hash value useing an xor tree
- *
- *
- *
+ * 
+ * 
+ * 
  *   Author: John Brunhaver
  *   Created:      Thu 10/01/10
  *   Last Updated: Tue 10/16/10
  *
- *   Copyright 2010 <jbrunhaver@gmail.com>
- *
+ *   Copyright 2010 <jbrunhaver@gmail.com>   
+ *  
  */
 
 /* ***************************************************************************
@@ -3287,7 +3279,7 @@ endmodule
  * -----------
  * Date           Author    Description
  * Sep 19, 2012   jingpu    ported from John's original code to Genesis
- *
+ *                          
  * ***************************************************************************/
 
 /******************************************************************************
@@ -3304,14 +3296,14 @@ endmodule
 
 /* A Note on Signal Names:
  *
- * Most signals have a suffix of the form _RxxN
+ * Most signals have a suffix of the form _RxxN 
  * where R indicates that it is a Raster Block signal
  * xx indicates the clock slice that it belongs to
  * and N indicates the type of signal that it is.
  * H indicates logic high, L indicates logic low,
  * U indicates unsigned fixed point, and S indicates
  * signed fixed point.
- *
+ * 
  */
 
 
@@ -3325,167 +3317,122 @@ module tree_hash_unq1
    output logic unsigned [8-1:0] out_RnnH   //Output signal that has been hashed and masked
 
    );
-
+   
    logic 	unsigned [31:0] 	arr32_RnnH ;
    logic 	unsigned [15:0] 	arr16_RnnH ;
-
+   
    //40ot that this is brittle and will break for any config that isn't 40:8
-   assign  arr32_RnnH[7:0]   = in_RnnH[7:0]   ^ in_RnnH[15:8]  ; // 0 = 0 ^ 1
-   assign   arr32_RnnH[15:8]  = in_RnnH[15:8]  ^ in_RnnH[23:16] ; // 1 = 1 ^ 2
-   assign   arr32_RnnH[23:16] = in_RnnH[23:16] ^ in_RnnH[31:24] ; // 2 = 2 ^ 3
+   assign  arr32_RnnH[7:0]   = in_RnnH[7:0]   ^ in_RnnH[15:8]  ; // 0 = 0 ^ 1 
+   assign   arr32_RnnH[15:8]  = in_RnnH[15:8]  ^ in_RnnH[23:16] ; // 1 = 1 ^ 2  
+   assign   arr32_RnnH[23:16] = in_RnnH[23:16] ^ in_RnnH[31:24] ; // 2 = 2 ^ 3 
    assign   arr32_RnnH[31:24] = in_RnnH[31:24] ^ in_RnnH[39:32] ; // 3 = 3 ^ 4
 
-   assign   arr16_RnnH[7:0] = arr32_RnnH[7:0] ^ arr32_RnnH[23:16] ; // 0 = 0 ^ 2
+   assign   arr16_RnnH[7:0] = arr32_RnnH[7:0] ^ arr32_RnnH[23:16] ; // 0 = 0 ^ 2 
    assign   arr16_RnnH[15:8] = arr32_RnnH[15:8] ^ arr32_RnnH[31:24] ; // 1 ^ 3
-
+   
    assign   out_RnnH[8-1:0] = ( arr16_RnnH[7:0] ^ arr16_RnnH[15:8] ) & mask_RnnH[7:0] ;
+   
+endmodule // tree_hash_unq1
 
-endmodule
+module DW_pl_reg ( clk, rst_n, enable,
+             data_in, data_out);
 
-
-module DW_pl_reg (clk, rst_n, enable,
-		  data_in, data_out);
-
-parameter width = 8;	// NATURAL
+parameter width = 8;    // NATURAL
 parameter in_reg = 0;   // RANGE 0 to 1
-parameter stages = 4;	// NATURAL
+parameter stages = 4;    // NATURAL
 parameter out_reg = 0;  // RANGE 0 to 1
-parameter rst_mode = 0;	// RANGE 0 to 1
+parameter rst_mode = 0;    // RANGE 0 to 1
 
-localparam en_msb = (stages-1+in_reg+out_reg < 1)? 0 : (stages+in_reg+out_reg-2);
+localparam en_msb = (stages-1+in_reg+out_reg < 1)? 0 :
+(stages+in_reg+out_reg-2);
 
-input			clk;		// clock input
-input			rst_n;		// active low reset input
-input  [en_msb : 0]	enable;		// active high enable input bus
-input  [width-1 : 0]	data_in;	// input data bus
+input            clk;        // clock input
+input            rst_n;        // active low reset input
+input  [en_msb : 0]    enable;        // active high enable input bus
+input  [width-1 : 0]    data_in;    // input data bus
 
-output [width-1 : 0]	data_out;	// output data bus
+output [width-1 : 0]    data_out;    // output data bus
 
-reg    [width-1 : 0]	pipe_regs [0 : en_msb];
+
+reg    [width-1 : 0]    pipe_regs [0 : en_msb];
+
+
 
 generate
- if (rst_mode == 0) begin : REG1_ASYNC_RST
-  always @ (posedge clk or negedge rst_n) begin : PROC_registers
-    integer i;
+  if (rst_mode == 0) begin : REG1_ASYNC_RST
+   always @ (posedge clk or negedge rst_n) begin : PROC_registers
+     integer i;
 
-    if (rst_n === 1'b0) begin
-      for (i=0 ; i <= en_msb ; i=i+1) begin
-	pipe_regs[i] <= {width{1'b0}};
-      end
-    end else if (rst_n === 1'b1) begin
-      for (i=0 ; i <= en_msb ; i=i+1) begin
-        if (enable[i] === 1'b1)
-	  pipe_regs[i] <= (i == 0)? (data_in | (data_in ^ data_in)) : pipe_regs[i-1];
-	else if (enable[i] !== 1'b0)
-	  pipe_regs[i] <= ((pipe_regs[i] ^ ((i == 0)? (data_in | (data_in ^ data_in)) : pipe_regs[i-1]))
-			      & {width{1'bx}}) ^ pipe_regs[i];
-      end
-    end else begin
-      for (i=0 ; i <= en_msb ; i=i+1) begin
-	pipe_regs[i] <= {width{1'bx}};
-      end
-    end
-  end
- end else begin : REG1_SYNC_RST
-  always @ (posedge clk) begin : PROC_registers
-    integer i;
+     if (rst_n === 1'b0) begin
+       for (i=0 ; i <= en_msb ; i=i+1) begin
+     pipe_regs[i] <= {width{1'b0}};
+       end
+     end else if (rst_n === 1'b1) begin
+       for (i=0 ; i <= en_msb ; i=i+1) begin
+         if (enable[i] === 1'b1)
+       pipe_regs[i] <= (i == 0)? (data_in | (data_in ^ data_in)) :
+pipe_regs[i-1];
+     else if (enable[i] !== 1'b0)
+       pipe_regs[i] <= ((pipe_regs[i] ^ ((i == 0)? (data_in | (data_in ^
+data_in)) : pipe_regs[i-1]))
+                   & {width{1'bx}}) ^ pipe_regs[i];
+       end
+     end else begin
+       for (i=0 ; i <= en_msb ; i=i+1) begin
+     pipe_regs[i] <= {width{1'bx}};
+       end
+     end
+   end
+  end else begin : REG1_SYNC_RST
+   always @ (posedge clk) begin : PROC_registers
+     integer i;
 
-    if (rst_n === 1'b0) begin
-      for (i=0 ; i <= en_msb ; i=i+1) begin
-	pipe_regs[i] <= {width{1'b0}};
-      end
-    end else if (rst_n === 1'b1) begin
-      for (i=0 ; i <= en_msb ; i=i+1) begin
-        if (enable[i] === 1'b1)
-	  pipe_regs[i] <= (i == 0)? (data_in | (data_in ^ data_in)) : pipe_regs[i-1];
-	else if (enable[i] !== 1'b0)
-	  pipe_regs[i] <= ((pipe_regs[i] ^ ((i == 0)? (data_in | (data_in ^ data_in)) : pipe_regs[i-1]))
-			      & {width{1'bx}}) ^ pipe_regs[i];
-      end
-    end else begin
-      for (i=0 ; i <= en_msb ; i=i+1) begin
-	pipe_regs[i] <= {width{1'bx}};
-      end
-    end
+     if (rst_n === 1'b0) begin
+       for (i=0 ; i <= en_msb ; i=i+1) begin
+     pipe_regs[i] <= {width{1'b0}};
+       end
+     end else if (rst_n === 1'b1) begin
+       for (i=0 ; i <= en_msb ; i=i+1) begin
+         if (enable[i] === 1'b1)
+       pipe_regs[i] <= (i == 0)? (data_in | (data_in ^ data_in)) :
+pipe_regs[i-1];
+     else if (enable[i] !== 1'b0)
+       pipe_regs[i] <= ((pipe_regs[i] ^ ((i == 0)? (data_in | (data_in ^
+data_in)) : pipe_regs[i-1]))
+                   & {width{1'bx}}) ^ pipe_regs[i];
+       end
+     end else begin
+       for (i=0 ; i <= en_msb ; i=i+1) begin
+     pipe_regs[i] <= {width{1'bx}};
+       end
+     end
+   end
   end
- end
 endgenerate
 
 
-  assign data_out = (in_reg+stages+out_reg == 1)? (data_in | (data_in ^ data_in)) : pipe_regs[en_msb];
-
-
-  //-------------------------------------------------------------------------
-  // Parameter legality check  
-  //-------------------------------------------------------------------------
-  
- 
-  // initial begin : parameter_check
-  //   integer param_err_flg;
-
-  //   param_err_flg = 0;
-    
-  
-  //   if (width < 1) begin
-  //     param_err_flg = 1;
-  //     $display(
-	// "ERROR: %m :\n  Invalid value (%d) for parameter width (lower bound: 1)",
-	// width );
-  //   end
-  
-  //   if ( (stages < 1) || (stages > 1024) ) begin
-  //     param_err_flg = 1;
-  //     $display(
-	// "ERROR: %m :\n  Invalid value (%d) for parameter stages (legal range: 1 to 1024)",
-	// stages );
-  //   end
-  
-  //   if ( (in_reg < 0) || (in_reg > 1) ) begin
-  //     param_err_flg = 1;
-  //     $display(
-	// "ERROR: %m :\n  Invalid value (%d) for parameter in_reg (legal range: 0 to 1)",
-	// in_reg );
-  //   end
-  
-  //   if ( (out_reg < 0) || (out_reg > 1) ) begin
-  //     param_err_flg = 1;
-  //     $display(
-	// "ERROR: %m :\n  Invalid value (%d) for parameter out_reg (legal range: 0 to 1)",
-	// out_reg );
-  //   end
-  
-  //   if ( (in_reg!=0) && (out_reg!=0) ) begin
-  //     param_err_flg = 1;
-  //     $display(
-	// "ERROR: %m : \n  Invalid configuration of DW_pl_reg - 'in_reg' and 'out_reg' parameters can't both be non-zero" );
-  //   end
-  
-  //   if ( (rst_mode < 0) || (rst_mode > 1) ) begin
-  //     param_err_flg = 1;
-  //     $display(
-	// "ERROR: %m :\n  Invalid value (%d) for parameter rst_mode (legal range: 0 to 1)",
-	// rst_mode );
-  //   end
-  
-  //   if ( param_err_flg == 1) begin
-  //     $display(
-  //       "%m :\n  Simulation aborted due to invalid parameter value(s)");
-  //     $finish;
-  //   end
-
-  // end // parameter_check 
-
-
-
-  
-  // always @ (clk) begin : monitor_clk 
-  //   if ( (clk !== 1'b0) && (clk !== 1'b1) && ($time > 0) )
-  //     $display( "WARNING: %m :\n  at time = %t, detected unknown value, %b, on clk input.",
-  //               $time, clk );
-  //   end // monitor_clk 
-
+   assign data_out = (in_reg+stages+out_reg == 1)? (data_in | (data_in ^
+data_in)) : pipe_regs[en_msb];
 
 endmodule
+
+
+
+// module DW_pl_reg # (parameter stages   = 3,
+// 		    parameter in_reg   = 0,  
+// 		    parameter out_reg  = 0,  
+// 		    parameter width    = 24,   
+// 		    parameter rst_mode = 0
+// 		    ) 
+//    (
+//     input [width-1:0]  data_in,
+//     input              clk,
+//     output [width-1:0] data_out,
+//     input              rst_n,
+//     input              enable);
+
+
+// endmodule
 //
 //---------------------------------------------------------------------------
 //  THIS FILE WAS AUTOMATICALLY GENERATED BY THE STANFORD GENESIS2 ENGINE
@@ -3493,12 +3440,12 @@ endmodule
 //  THIS VERSION OF GENESIS2 IS NOT TO BE USED FOR ANY COMMERCIAL USE
 //---------------------------------------------------------------------------
 //
-//
+//  
 //	-----------------------------------------------
 //	|            Genesis Release Info             |
 //	|  $Change: 11012 $ --- $Date: 2012/09/13 $   |
 //	-----------------------------------------------
-//
+//	
 //
 //  Source file: /afs/ir.stanford.edu/users/p/r/praina/ee271/project/rtl/rast.vp
 //  Source template: rast
@@ -3523,23 +3470,23 @@ endmodule
 
 /*
  * Reyes Style Hider:
- *
+ *     
  *  This module accepts a stream of micropolygons
  *  and produces a stream of fragments
- *
+ * 
  *  This module contains three submodules:
  *    -bounding box module which generates the bounding box
  *     for a micropolygon
- *    -test iterator module which iterates over the bounding
+ *    -test iterator module which iterates over the bounding 
  *    -sample test function which tests to see if the sample
  *     location from the bounding box lay inside the micropolygon
- *
- *
+ * 
+ * 
  *   Author: John Brunhaver
  *   Created:          09/21/09
  *   Last Updated: TUE 10/20/09
  *
- *   Copyright 2009 <jbrunhaver@gmail.com>
+ *   Copyright 2009 <jbrunhaver@gmail.com>   
  */
 
 
@@ -3548,7 +3495,7 @@ endmodule
  * -----------
  * Date           Author    Description
  * Sep 19, 2012   jingpu    ported from John's original code to Genesis
- *
+ *                          
  * ***************************************************************************/
 
 /******************************************************************************
@@ -3573,7 +3520,7 @@ endmodule
 // PipesSamp (_GENESIS2_DECLARATION_PRIORITY_) = 2
 //
 
-module rast
+module rast  
   (
    // Input Signals
    input logic signed [24-1:0] 	poly_R10S[3-1:0][3-1:0] , // Poly Position
@@ -3585,38 +3532,38 @@ module rast
    input logic signed [24-1:0] 	screen_RnnnnS[1:0] , // Screen Dimensions
    input logic [3:0] 			subSample_RnnnnU , // SubSample_Interval
 
-   // Global Signals
-   input logic 				clk, // Clock
+   // Global Signals 
+   input logic 				clk, // Clock 
    input logic 				rst, // Reset
 
    // Output Control Signals
    output logic 			halt_RnnnnL,
-
+  
    // Output Signals
    output logic signed [24-1:0] hit_R18S[3-1:0], // Hit Location
-   output logic 			unsigned [24-1:0] color_R18U[3-1:0] , // Color of Poly
+   output logic 			unsigned [24-1:0] color_R18U[3-1:0] , // Color of Poly 
    output logic 			hit_valid_R18H            // Is this a hit?
    );
 
    //Intermediate Signals
-   logic  signed [24-1:0] 	box_R13S[1:0][1:0];             // 2 Sets X,Y Fixed Point Values
+   logic  signed [24-1:0] 	box_R13S[1:0][1:0];             // 2 Sets X,Y Fixed Point Values   
    logic  signed [24-1:0] 	poly_R13S[3-1:0][3-1:0]; // 4 Sets X,Y Fixed Point Values
    logic 				unsigned [24-1:0]  color_R13U[3-1:0]  ;       // Color of Poly
    logic 				validPoly_R13H;                 // Valid Data for Operation
    logic 				isQuad_R13H;                    // Is Poly Quad?
-
+   
    logic signed [24-1:0] 	poly_R14S[3-1:0][3-1:0]; //Micropolygon to Sample Test
    logic 				unsigned [24-1:0]   color_R14U[3-1:0] ;         // Color of Poly
    logic 				isQuad_R14H;                    //Micropygon is quad
    logic signed [24-1:0] 	sample_R14S[1:0];               //Sample Location to Be Tested
    logic 				validSamp_R14H;                 //Sample and Micropolygon are Valid
-
+   
    logic signed [24-1:0] 	poly_R16S[3-1:0][3-1:0]; //Micropolygon to Sample Test
    logic 				unsigned [24-1:0]   color_R16U[3-1:0] ;         //Color of Poly
    logic 				isQuad_R16H;                    //Micropygon is quad
    logic signed [24-1:0] 	sample_R16S[1:0];               //Sample Location to Be Tested
    logic 				validSamp_R16H;                 //Sample and Micropolygon are Valid
-
+   
    logic [24-1:0] 		zero;                     //fudge signal to hold zero as a reset value
    logic [127:0] 			big_zero;                 //fudge signal to hold zero as a reset value
    //Intermediate Signals
@@ -3627,86 +3574,86 @@ module rast
    assert property (@(posedge clk) 1);
 
    //TODO: Missing Micropolygon color
-
+   
    //TODO: Make param pipedepth work
-
+   
    bbox_unq1  bbox (
 			     .poly_R10S(poly_R10S) ,
-			     .color_R10U(color_R10U) ,
+			     .color_R10U(color_R10U) ,	      
 			     .isQuad_R10H(isQuad_R10H) ,
 			     .validPoly_R10H(validPoly_R10H) ,
-
-			     .halt_RnnnnL(halt_RnnnnL) ,
+      
+			     .halt_RnnnnL(halt_RnnnnL) , 
 			     .screen_RnnnnS(screen_RnnnnS) ,
 			     .subSample_RnnnnU(subSample_RnnnnU) ,
-
+      
 			     .clk(clk),
 			     .rst(rst),
-
+      
 			     .poly_R13S(poly_R13S),
-			     .color_R13U(color_R13U) ,
+			     .color_R13U(color_R13U) ,	      
 			     .isQuad_R13H(isQuad_R13H),
 			     .box_R13S(box_R13S),
-			     .validPoly_R13H(validPoly_R13H)
-			     ) ;
-
-
+			     .validPoly_R13H(validPoly_R13H) 
+			     ) ; 
+   
+   
    test_iterator_unq1  test_iterator (
 				      .poly_R13S(poly_R13S),
-				      .color_R13U(color_R13U) ,
+				      .color_R13U(color_R13U) ,	      
 				      .isQuad_R13H(isQuad_R13H),
 				      .box_R13S(box_R13S),
-				      .validPoly_R13H(validPoly_R13H),
-
+				      .validPoly_R13H(validPoly_R13H),	
+      
 				      .subSample_RnnnnU(subSample_RnnnnU) ,
-				      .halt_RnnnnL(halt_RnnnnL),
-
+				      .halt_RnnnnL(halt_RnnnnL), 
+      
 				      .clk(clk),
 				      .rst(rst),
-
+      
 				      .poly_R14S(poly_R14S),
-				      .color_R14U(color_R14U) ,
+				      .color_R14U(color_R14U) ,	      
 				      .isQuad_R14H(isQuad_R14H),
 				      .sample_R14S(sample_R14S),
-				      .validSamp_R14H(validSamp_R14H)
+				      .validSamp_R14H(validSamp_R14H) 
 				      ) ;
 
    hash_jtree_unq1  hash_jtree (
 				   .poly_R14S(poly_R14S),
-				   .color_R14U(color_R14U) ,
+				   .color_R14U(color_R14U) ,	      
 				   .isQuad_R14H(isQuad_R14H),
 				   .sample_R14S(sample_R14S),
 				   .validSamp_R14H(validSamp_R14H),
 
 				   .subSample_RnnnnU(subSample_RnnnnU) ,
-
+      
 				   .clk(clk),
 				   .rst(rst),
-
+      
 				   .poly_R16S(poly_R16S),
-				   .color_R16U(color_R16U),
+				   .color_R16U(color_R16U),			
 				   .sample_R16S(sample_R16S),
 				   .validSamp_R16H(validSamp_R16H),
 				   .isQuad_R16H(isQuad_R16H)
 
 				   );
+   
 
-
-   sampletest_unq1  sampletest (
+   sampletest_unq1  sampletest (   
 				      .poly_R16S(poly_R16S),
-				      .color_R16U(color_R16U),
+				      .color_R16U(color_R16U),			
 				      .sample_R16S(sample_R16S),
 				      .validSamp_R16H(validSamp_R16H),
 				      .isQuad_R16H(isQuad_R16H),
-
+      
 				      .clk(clk),
 				      .rst(rst),
-
+      
 				      .hit_R18S( hit_R18S ),
-				      .color_R18U( color_R18U ),
-				      .hit_valid_R18H( hit_valid_R18H )
+				      .color_R18U( color_R18U ),						 
+				      .hit_valid_R18H( hit_valid_R18H ) 
 				      );
-
+   
    endmodule // rast
 
 module top
@@ -3720,8 +3667,8 @@ module top
    input logic signed [24-1:0] 	screen_RnnnnS[1:0] , // Screen Dimensions
    input logic [1:0] 			subSample , // SubSample_Interval
 
-   // Global Signals
-   input logic 				clk, // Clock
+   // Global Signals 
+   input logic 				clk, // Clock 
    input logic 				rst, // Reset
 
    // Output Control Signals
@@ -3729,7 +3676,7 @@ module top
 
    // Output Signals
    output logic signed [24-1:0] hit_R18S[3-1:0], // Hit Location
-   output logic 			unsigned [24-1:0] color_R18U[3-1:0] , // Color of Poly
+   output logic 			unsigned [24-1:0] color_R18U[3-1:0] , // Color of Poly 
    output logic 			hit_valid_R18H            // Is this a hit?
    );
 
@@ -3743,7 +3690,7 @@ module top
 
    logic [3:0] 		 subSample_RnnnnU;
 
-
+   
    assign screen_RnnnnS[0] = {1'b1,19'd0};
 
    assign screen_RnnnnS[1] = {1'b1,19'd0};
@@ -3761,7 +3708,7 @@ module top
 	   2'b11 : subSample_RnnnnU = 4'b1000;
 
    endcase // unique case (subSample)
-
+         
    // Generate validPoly_R10H if all coordinates are in screen limits
       cmp_validR10H [2][0][0] = (poly_R10S[2][0] >= 0);
 
@@ -3816,6 +3763,6 @@ module top
 	   .color_R18U(color_R18U),
 	   .hit_valid_R18H(hit_valid_R18H)
 	   );
-
-
+   
+   
 endmodule // top

@@ -1,0 +1,15 @@
+[GENERAL]
+model_file: rast.sv[top],reset.ets
+add_clock: True
+
+[DEFAULT]
+bmc_length: 20
+
+[Test Iterator 1]
+description: "Check one edge of bounding box"
+formula: reset_done = 0_1
+verification: safety
+strategy: MULTI
+prove: True
+expected: True
+smt2_tracing: rast.smt2

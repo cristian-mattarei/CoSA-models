@@ -1,0 +1,2 @@
+# assume -name same_subsample {subSample_RnnnnU |=> (subSample_RnnnnU == $past(subSample_RnnnnU, 1))}
+next(subSample_RnnnnU) = subSample_RnnnnU
